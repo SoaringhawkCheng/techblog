@@ -22,12 +22,12 @@ permalink_defaults:
 
 # Site settings
 SEOTitle:  成翔昊 | TechBlog
-email: chengxianghao@bytedance.com
+email: soaringhawkcheng@gmail.com
 description: ""
-keyword: ""
-header-img: /img/header_img/home2.png
-article-img: /img/article_header/article_header.jpg
-404-img: /img/header_img/404.png
+keyword: "code reading"
+header-img: /img/vintage/home.jpg
+article-img: /img/vintage/article.jpg
+404-img: /img/vintage/4041.jpg
 signature: false #show signature
 signature-img: img/signature/BeanTechSign-white.png 
 
