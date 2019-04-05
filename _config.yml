@@ -4,7 +4,7 @@
 
 # Site
 title: 追寻梦之碎片
-subtitle: 几孤烟寒水 铸刀剑星霜  
+subtitle: "「几孤烟寒水 · 铸刀剑星霜」"
 author: Soaringhawk Cheng
 language: zh-CN
 timezone:
@@ -24,7 +24,7 @@ permalink_defaults:
 SEOTitle:  成翔昊 | TechBlog
 email: soaringhawkcheng@gmail.com
 description: ""
-keyword: "code reading"
+keyword: ""
 header-img: /img/vintage/home.jpg
 article-img: /img/vintage/article.jpg
 404-img: /img/vintage/401.jpg
@@ -64,7 +64,7 @@ anchorjs: true                          # if you want to customize anchor. check
 
 # Sidebar settings
 sidebar: true                       # whether or not using Sidebar.
-sidebar-about-description: ""
+sidebar-about-description: "知春路Google后端研发工程师。当前的目标是，在四年内不惜一切代价，成长为一个全栈攻城狮！！！"
 sidebar-avatar: /img/avatar/kenshin.jpeg      # use absolute URL, seeing it's used in both `/` and `/about/`
 widgets:
 - featured-tags
@@ -76,7 +76,7 @@ widgets:
 
 # widget behavior
 ## Archive
-archives-img: /img/header_img/archives-widget.jpg
+archives-img: /img/vintage/archive.jpg
 archive_type: 'monthly'
 show_count: true
 

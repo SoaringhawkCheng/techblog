@@ -2,7 +2,7 @@
 layout: "about"
 title: "About"
 date: 2017-10-03 10:48:33
-description: ""
+description: " "
 header-img: "/img/vintage/about.jpg"
 aplayer: false
 fixed: false

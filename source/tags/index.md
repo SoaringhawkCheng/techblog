@@ -1,6 +1,6 @@
 ---
 layout: "tags"
 title: "Tags"
-description: ""
+description: " "
 header-img: "/img/vintage/tag.jpg"
 ---
