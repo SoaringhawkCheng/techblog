@@ -218,5 +218,5 @@ sitemap:
 # branch: master
 deploy:
     type: git
-    repo: git@github.com:SoaringhawkCheng/soaringhawkcheng.github.io.git
+    repo: git@github.com:SoaringhawkCheng/blog.git
     branch: gh-pages
