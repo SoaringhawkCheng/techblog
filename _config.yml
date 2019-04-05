@@ -16,7 +16,7 @@ root: /
 #permalink: :year/:month/:day/:title/
 permalink: :category/:title/
 permalink_defaults:
-  lang: en
+  lang: zh-CN
 
 #Custom Setting Start
 
@@ -214,8 +214,6 @@ sitemap:
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
-# repository: https://github.com/huweihuang/xxxxxxx.github.io.git
-# branch: master
 deploy:
     type: git
     repo: git@github.com:SoaringhawkCheng/blog.git
