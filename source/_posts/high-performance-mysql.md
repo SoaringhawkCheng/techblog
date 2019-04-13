@@ -2,16 +2,12 @@
 title: 「高性能MYSQL」读书笔记
 catalog: true
 date: 2019-04-05 14:38:09
-subtitle:
-tags:
-- mysql
-- storage
-- 
+subtitle: 
+tags: 
+- sql
 categories:
-- notes
+- 编程
 ---
-> 
-
 # 隔离性
 
 针对隔离性遇到的问题如下：
@@ -49,3 +45,30 @@ categories:
 解决了幻读问题
 
 读数据加**表级共享锁**;写数据加**表级排他锁**
+
+# 乐观锁和悲观锁
+
+## 乐观锁
+
+获取数据不加锁
+
+更新数据判断数据是否被修改，如果修改不更新
+
+适合于多读的机制，可以提高吞吐量
+
+一般使用version方式和CAS方式
+
+1. version方式
+
+
+
+2. CAS方式
+
+compare and swap或者compare and set，涉及到三个操作数：内存值、预期值和新值
+
+## 悲观锁
+
+每次获取数据都加锁
+
+依赖数据库的锁机制，无法保证外部系统不会修改数据
+
