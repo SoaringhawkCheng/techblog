@@ -17,16 +17,33 @@ categories:
 > 
 > 实际完成时间：
 
-# 数据处理系统
+
+# 体系结构
+
+## 数据处理系统
 
 数据处理分成两类：联机事务处理OLTP(Online Transaction Processing)、联机分析处理OLAP(Online Analytical Processing)。
 
-## 联机事务处理
+### 联机事务处理
 
-## 联机分析处理
+### 联机分析处理
 
-# SQL语言分类
+## SQL语言分类
 
 SQL语言分四类：数据查询语言DQL，数据操纵语言DML，数据定义语言DDL，数据控制语言DCL
 
+# 存储引擎
 
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/1.png?raw=true)
+
+# 文件
+
+![]()
+
+# 表
+
+# 事务
+
+# 索引与算法
+
+# 锁
