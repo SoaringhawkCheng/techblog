@@ -4,7 +4,7 @@ catalog: true
 date: 2019-04-05 14:38:09
 subtitle: 
 tags: 
-- sql
+- SQL
 categories:
 - 编程
 ---
@@ -15,6 +15,20 @@ categories:
 > 预计完成时间：5-4
 > 
 > 实际完成时间：
+
+# MySQL架构
+![MySQL三层架构](https://github.com/SoaringhawkCheng/blog/blob/gh-pages/%E7%BC%96%E7%A8%8B/high-performance-mysql/1.png?raw=true)
+## 服务层
+
+负责链接管理、授权认证、安全。维护一个连接池，使用用户名和密码或SSL进行认证。
+
+## 查询优化
+
+负责解析查询（编译SQL），并进行优化。对于SELECT语句，先查询缓存。存储过程、触发器、视图都在这一层。
+
+## 存储层
+
+负责存储数据、提取数据、开启一个事务等等。存储引擎通过api与上层进行通信，api屏蔽了不同存储引擎之间的差异。
 
 # 隔离性
 
@@ -64,15 +78,35 @@ categories:
 
 适合于多读的机制，可以提高吞吐量
 
-一般使用version方式和CAS方式
+一般使用：version方式和CAS方式
 
-1. version方式
+### version方式
 
+提交版本必须大于记录当前版本才能执行更新，
 
+### CAS方式
 
-2. CAS方式
+compare and swap或者compare and set，是一种有名无锁算法，不使用锁的情况下（线程不会被阻塞）实现多线程之间的变量同步。
 
-compare and swap或者compare and set，涉及到三个操作数：内存值、预期值和新值
+涉及到三个操作数：内存值、预期值和新值
+
+* 需要读写的内存值 V
+* 进行比较的值 A
+* 你写入的新值 B
+
+CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。
+
+```
+int compare_and_swap (int* reg, int oldval, int newval) 
+{
+  ATOMIC(); 
+  int old_reg_val = *reg;
+  if (old_reg_val == oldval) 
+     *reg = newval;
+  END_ATOMIC();
+  return old_reg_val;
+}
+```
 
 ## 悲观锁
 
