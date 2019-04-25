@@ -38,12 +38,20 @@ SQL语言分四类：数据查询语言DQL，数据操纵语言DML，数据定�
 
 # 文件
 
-![]()
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/2.png?raw=true)
 
 # 表
 
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/3.png?raw=true)
+
 # 事务
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/4.png?raw=true)
 
 # 索引与算法
 
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/5.png?raw=true)
+
 # 锁
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/6.png?raw=true)
