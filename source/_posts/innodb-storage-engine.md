@@ -1,5 +1,5 @@
 ---
-title: 「MySQL技术内幕·InnoDB存储引擎」读书笔记
+title: 「MySQL技术内幕·InnoDB存储引擎」学习笔记
 catalog: true
 date: 2019-04-15 21:09:15
 subtitle: 

@@ -1,5 +1,5 @@
 ---
-title: 「nsq源码」阅读笔记
+title: 「nsq源码」学习笔记
 catalog: true
 date: 2019-04-19 15:17:43
 subtitle:
