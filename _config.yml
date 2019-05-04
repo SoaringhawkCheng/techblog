@@ -21,7 +21,7 @@ permalink_defaults:
 #Custom Setting Start
 
 # Site settings
-SEOTitle:  成翔昊 | TechBlog
+SEOTitle:  Blog | 追寻梦之碎片
 email: soaringhawkcheng@gmail.com
 description: ""
 keyword: ""
@@ -64,7 +64,7 @@ anchorjs: true                          # if you want to customize anchor. check
 
 # Sidebar settings
 sidebar: true                       # whether or not using Sidebar.
-sidebar-about-description: "知春路Google后端研发工程师。当前的目标是，在四年内不惜一切代价，成长为一个全栈攻城狮！！！"
+sidebar-about-description: "内抱不群 外欲混迹 —— 张居正"
 sidebar-avatar: /img/avatar/kenshin.jpeg      # use absolute URL, seeing it's used in both `/` and `/about/`
 widgets:
 - featured-tags
