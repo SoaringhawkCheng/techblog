@@ -138,7 +138,19 @@ docker stop con_id  # 停止容器
 
 ## 分析器
 分析器分类：索引时分析和查询时分析器
-分析器结构：字符过滤器、分词器、单词过滤器
+分析器结构：
+
+* character filters
+
+字符过滤器，可以添加、删除或更改字符来转换流，一个分析器可以有多个字符过滤器
+
+* tokenizer
+
+分词器，接受字符流，将其分解成单独的单词，输出标记流，一个分析器值能有一个标记器
+
+* token filters
+
+单词过滤器，接受标记流，可以添加、删除或修改标记，不允许更改每个标记的位置或字符偏移量，一个分析器可以有多个标记过滤器，按顺序应用应用
 
 ### 测试分析器
 ```
@@ -156,22 +168,84 @@ POST _analyze  # 测试分词器分词
 ```
 ### 分析器详解
 
-#### 标准分词 
+* Standard Analyzer
 
-#### 简单分词(simple analyzer)
-只要遇到不是字母的字符， simple分析器就会将文本分成多个术语
+标准分析仪按照Unicode文本分段算法的定义，将文本分割成单词边界的分词。它删除了大多数标点符号，小写显示分词，并支持删除stop words。
 
-#### TODO
+* Simple Analyzer
+
+当遇到不是字母的字符时，简单的分析器会将文本分成条目。小写显示分词。
+
+* Whitespace Analyzer
+
+空格分析器遇到任何空格字符时都会将文本分为多个项目。不会把分词转换为小写字母。
+
+* Stop Analyzer
+
+停止分析仪和Simple Analyzer类似，但也支持stop words的删除。
+
+* Keyword Analyzer
+
+一个“noop”分析器，它可以接受任何给定的文本，并输出完全相同的文本作为一个单词。
+
+* Pattern Analyzer
+
+使用正则表达式拆分分词，支持lower-casing和stop words。
+
+* Language Analyzers
+
+Elasticsearch提供许多语言特定的分析器，如英语或法语。
+
+* Fingerprint Analyzer
+
+一个专门的分析仪，它可以创建一个可用于重复检测的指纹。
+
+## 规范化器
+
+Normalizer和分析器类似，它们只输出一个标记，因此没有分词器，只接受可用字符过滤器和标记过滤器。
+
+keyword可以用normalizer来进行标准化，keyword类型想必text类型不能分词，但是同样需要进行相应的标准化处理，比如统一转成小写，移除标点符号
+
+## 分词器
+
+
+
+## 标记过滤器
+
+
+
+## 字符过滤器
+
+
 
 # 查询DSL
 
-将查询DSL视为查询的AST，由两种类型的子句组成：`叶子查询语句`和`复合查询语句`
+将查询DSL视为查询的AST，由两种类型的子句组成：`查询上下文`和`过滤上下文`
 
 ## 查询和过滤上下文
 
-查询：匹配程度`score`
+查询上下文：匹配程度`score`
 
-过滤：是否匹配，过滤掉不匹配的
+过滤上下文：是否匹配，过滤掉不匹配的
+
+搜索模板：
+```
+GET /_search
+{
+  "query": { 
+    "bool": { 
+      "must": [
+        { "match": { "title":   "Search"        }}, 
+        { "match": { "content": "Elasticsearch" }}  
+      ],
+      "filter": [ 
+        { "term":  { "status": "published" }}, 
+        { "range": { "publish_date": { "gte": "2015-01-01" }}} 
+      ]
+    }
+  }
+}
+```
 
 ## 全文查询
 
