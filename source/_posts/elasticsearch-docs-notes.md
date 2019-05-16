@@ -9,7 +9,7 @@ tags:
 categories:
 - 编程
 ---
-> 书籍豆瓣链接：[ES 5.2 官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/5.2/index.html)
+> 书籍豆瓣链接：[ES 5.4 官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/5.4/index.html)
 > 
 > 开始学习日期：4-1
 > 
@@ -128,11 +128,19 @@ docker stop con_id  # 停止容器
 # 查询接口
 ## 请求体搜索
 根目录下字段
-> query 定义一个使用dsl的搜索
-> 
-> from,size 查询分页 from+size不能大于index.max_result_window(默认10000)
-> 
-> sort 
+* query 
+
+定义一个使用dsl的搜索
+ 
+* from,size 
+
+查询分页 from+size不能大于index.max_result_window(默认10000)
+ 
+* sort 
+
+允许在特定字段上添加一个或多个排序。排序是在每个字段级别定义的， `_score`特殊字段名称按分数排序，`_doc`按索引顺序排序
+
+* 
 
 # 索引接口
 
@@ -248,6 +256,8 @@ GET /_search
 ```
 
 ## 全文查询
+
+
 
 # 映射
 
@@ -441,6 +451,10 @@ GET /_search
 * _id
 	
 	略
+	
+* _uid
+
+	{`_type`}#{`_id`}并索引为`_uid`
 	
 ### 原文档元字段
 
