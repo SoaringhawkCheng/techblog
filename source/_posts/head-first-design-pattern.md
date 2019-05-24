@@ -1,7 +1,7 @@
 ---
-title: 「Git文档」学习笔记
+title: head-first-design-pattern
 catalog: true
-date: 2019-05-05 20:46:09
+date: 2019-05-24 19:44:46
 subtitle:
 header-img:
 tags:
