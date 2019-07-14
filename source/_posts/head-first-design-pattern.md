@@ -15,7 +15,7 @@ categories:
 > 
 > 预计完成时间：6-9
 > 
-> 实际完成时间：
+> 实际完成时间：6-6
 
 # 设计基础
 
@@ -306,6 +306,8 @@ categories:
 			
 			RMI(remote method invocation, 远程方法调用)，客户辅助对象成为stub(桩)，服务辅助对象成为skeleton(骨架) 
 			skeleton对数据进行序列化，stub对数据进行反序列化
+			
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/2.jpg?raw=true)
 			
 * 复合模式
 
