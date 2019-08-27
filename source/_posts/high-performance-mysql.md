@@ -114,3 +114,5 @@ int compare_and_swap (int* reg, int oldval, int newval)
 
 依赖数据库的锁机制，无法保证外部系统不会修改数据
 
+# 脑图
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/4.png?raw=true)
