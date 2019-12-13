@@ -7,3 +7,4 @@ header-img:
 tags:
 categories:
 ---
+[ACM Book](https://hrbust-acm-team.gitbooks.io/acm-book/content/dynamic_programming/opt.html)
