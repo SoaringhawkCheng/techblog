@@ -1,5 +1,5 @@
 ---
-title: 「某javascript教程」读书笔记
+title: 「某javascript教程」笔记学习
 catalog: true
 date: 2019-06-06 20:41:47
 subtitle:

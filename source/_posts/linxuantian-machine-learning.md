@@ -1,5 +1,5 @@
 ---
-title: linxuantian-machine-learning
+title: 「林轩田机器学习」学习笔记
 catalog: true
 date: 2019-08-29 10:02:02
 subtitle:

@@ -1,5 +1,5 @@
 ---
-title: from-paxos-to-zookeeper
+title: 「从Paxos到Zookeeper」学习笔记
 catalog: true
 date: 2019-08-27 17:00:38
 subtitle:
