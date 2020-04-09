@@ -3,9 +3,9 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 追寻梦之碎片
-subtitle: "「几孤烟寒水 · 铸刀剑星霜」"
-author: Soaringhawk Cheng
+title: 我的博客
+subtitle: 
+author: 回笼觉教主
 language: zh-CN
 timezone:
 
@@ -21,7 +21,7 @@ permalink_defaults:
 #Custom Setting Start
 
 # Site settings
-SEOTitle:  Blog | 追寻梦之碎片
+SEOTitle:  Blog | 回笼觉教主
 email: soaringhawkcheng@gmail.com
 description: ""
 keyword: ""
@@ -64,7 +64,7 @@ anchorjs: true                          # if you want to customize anchor. check
 
 # Sidebar settings
 sidebar: true                       # whether or not using Sidebar.
-sidebar-about-description: "内抱不群 外欲混迹 —— 张居正"
+sidebar-about-description: 
 sidebar-avatar: /img/avatar/kenshin.jpeg      # use absolute URL, seeing it's used in both `/` and `/about/`
 widgets:
 - featured-tags
