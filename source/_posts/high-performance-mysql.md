@@ -1,12 +1,12 @@
 ---
-title: 「高性能MYSQL」学习笔记
+title: 「高性能MYSQL」学习笔记[DOING]
 catalog: true
 date: 2019-04-05 14:38:09
 subtitle: 
 tags: 
-- sql
+- database
 categories:
-- 编程
+- 工程
 ---
 > 书籍豆瓣链接：[《高性能MySQL》](https://book.douban.com/subject/23008813/)
 > 
@@ -115,4 +115,4 @@ int compare_and_swap (int* reg, int oldval, int newval)
 依赖数据库的锁机制，无法保证外部系统不会修改数据
 
 # 脑图
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/4.png?raw=true)
+[链接](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/4.png?raw=true)

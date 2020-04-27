@@ -1,13 +1,13 @@
 ---
-title: 「MySQL技术内幕·InnoDB存储引擎」学习笔记
+title: 「MySQL技术内幕·InnoDB存储引擎」学习笔记[DOING]
 catalog: true
 date: 2019-04-15 21:09:15
 subtitle: 
 header-img:
 tags:
-- sql
+- database
 categories:
-- 编程
+- 工程
 ---
 > 书籍豆瓣链接：[《MySQL技术内幕·InnoDB存储引擎》](https://book.douban.com/subject/24708143/)
 > 

@@ -1,5 +1,5 @@
 ---
-title: 「NSQ文档」学习笔记
+title: 「NSQ文档」学习笔记[DOING]
 catalog: true
 date: 2019-07-14 16:03:38
 subtitle:
@@ -7,7 +7,7 @@ header-img:
 tags:
 - mq
 categories:
-- 编程
+- 工程
 ---
 > 书籍豆瓣链接：[NSQ 1.1.0文档](https://nsq.io/overview/design.html)
 > 

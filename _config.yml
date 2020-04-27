@@ -3,9 +3,9 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 我的博客
+title: 沙罗双树园
 subtitle: 
-author: 回笼觉教主
+author: 追寻梦之碎片
 language: zh-CN
 timezone:
 
@@ -21,7 +21,7 @@ permalink_defaults:
 #Custom Setting Start
 
 # Site settings
-SEOTitle:  Blog | 回笼觉教主
+SEOTitle:  沙罗双树园 | 追寻梦之碎片
 email: soaringhawkcheng@gmail.com
 description: ""
 keyword: ""

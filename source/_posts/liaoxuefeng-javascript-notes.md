@@ -1,17 +1,21 @@
 ---
-title: 「某javascript教程」笔记学习
+title: 「廖雪峰javascript教程」笔记学习[DOING]
 catalog: true
 date: 2019-06-06 20:41:47
 subtitle:
 header-img:
 tags:
+- fe
 categories:
+- 工程
 ---
-> 文档地址[《某JavaScript教程》](https://www.liaoxuefeng.com/wiki/1022910821149312)
+> 文档地址[《廖雪峰JavaScript教程》](https://www.liaoxuefeng.com/wiki/1022910821149312)
 > 
->
->
->
+> 开始学习时间：
+> 
+> 预计完成时间：
+> 
+> 实际完成时间：
 
 # 快速入门
 

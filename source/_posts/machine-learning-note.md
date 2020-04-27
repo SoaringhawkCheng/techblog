@@ -1,5 +1,5 @@
 ---
-title: 机器学习笔记
+title: 「统计学习方法」学习笔记[TODO]
 catalog: true
 date: 2019-08-18 19:09:06
 subtitle:
@@ -7,9 +7,9 @@ header-img:
 tags:
 - ml
 categories:
-- 编程
+- 算法
 ---
-> 书籍豆瓣链接：
+> 书籍豆瓣链接：[《统计学习方法》](https://book.douban.com/subject/10590856/)
 > 
 > 开始学习日期：8-1
 > 

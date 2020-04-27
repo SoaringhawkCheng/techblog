@@ -1,13 +1,13 @@
 ---
-title: 「Elasticsearch文档」学习笔记
+title: 「Elasticsearch文档」学习笔记[DOING]
 catalog: true
 date: 2019-04-24 10:59:21
 subtitle:
 header-img:
 tags:
-- nosql
+- se
 categories:
-- 编程
+- 工程
 ---
 > 书籍豆瓣链接：[ES 5.4 官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/5.4/index.html)
 > 
@@ -316,10 +316,8 @@ GET /_search
 		    }
 		  }
 		}
-		```
+
 		转换为
-		
-		```
 		{
 		  "region":             "US",
 		  "manager.age":        30,
@@ -347,10 +345,8 @@ GET /_search
 		    }
 		  ]
 		}
-		```
+
 		转换为
-		
-		```
 		{
   			"group" : "fans",
   			"user.first" : [ "alice", "john" ],
@@ -378,10 +374,8 @@ GET /_search
 		    ]
 		  }
 		}
-		```
-		转换为
 		
-		```		
+		转换为
 		{
 		  "region":             "US",
 		  "manager.age":        30,
@@ -419,11 +413,8 @@ GET /_search
 		    }
 		    ]
 		}
-		```
 		
 		转换为：
-		
-		```
 		{
 		  "region":             "US",
 		  "manager.age":        30,
@@ -445,6 +436,7 @@ GET /_search
 		}
 		//这样的查询将不能命中文档！！！
 		```
+
 
 ## 元字段
 

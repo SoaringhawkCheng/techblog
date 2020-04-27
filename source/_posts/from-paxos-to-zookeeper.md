@@ -1,13 +1,13 @@
 ---
-title: 「从Paxos到Zookeeper」学习笔记
+title: 「从Paxos到Zookeeper」学习笔记[TODO]
 catalog: true
 date: 2019-08-27 17:00:38
 subtitle:
 header-img:
 tags:
-- distibuted system
+- gateway
 categories:
-- 编程
+- 工程
 ---
 > 书籍豆瓣链接：[《从Paxos到Zookeeper》](https://book.douban.com/subject/26292004/)
 > 
