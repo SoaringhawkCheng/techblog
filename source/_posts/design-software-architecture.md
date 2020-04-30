@@ -1,5 +1,5 @@
 ---
-title: 「软件架构设计」读书笔记[TODO]
+title: 「软件架构设计」学习笔记[TODO]
 catalog: true
 date: 2020-04-27 21:06:15
 subtitle:

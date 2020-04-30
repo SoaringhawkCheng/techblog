@@ -1,5 +1,5 @@
 ---
-title: 「Linux内核设计与实现」[DOING]
+title: 「Linux内核设计与实现」学习笔记[DOING]
 catalog: true
 date: 2020-02-27 22:17:27
 subtitle:
