@@ -17,14 +17,13 @@ categories:
 > 
 > 实际完成时间：
 
-
 # 体系结构
 
 ## 基础概念
 
 * **数据库** 物理操作系统文件或其他形式文件类型的集合，是依照某种数据模型组织起来并存放于二级存储器的数据集合
 
-* **实例** MySQL数据库由后台线程以及一个共享内存区组成。共享内存可以被运行的后台线程所共享，数据库实例才是真正用于操作数据库文件的。Mysql单进程多线程架构，实例就是一个进程。
+* **实例** MySQL数据库由后台线程以及一个共享内存区组成。共享内存可以被运行的后台线程所共享，数据库实例才是真正用于操作数据库文件的。Mysql单进程多线程架构，实例就是一个进程
 
 ## 存储引擎
 
@@ -151,3 +150,49 @@ B+树索引并不能
 # 锁
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/innodb-storage-engine/6.png?raw=true)
+
+## 锁的类型
+
+共享锁 读一行数据
+
+### 一致性非锁定读
+
+READ COMMITTED 读取被锁定行的最新一份快照数据
+
+REPEATABLE RAED 总是读取事务开始的版本行数据
+
+事务的隔离级别为REPEATABLE READ，Innodb存储引擎的SELECT操作使用一致性非锁定读
+
+### 一致性锁定读
+
+SELECT ... FOR UPDATE
+
+SELECT ... LOCK IN SHARE MODE
+
+### 自增长锁
+
+每个含有自增长值的表，都有一个自增长计数器，对于含有自增长计数器的表进行插入，加表锁AUTO-INC Locking
+
+自增长的值，必须是索引的第一列
+
+## 锁的算法
+
+* Record Lock: 
+
+单个行记录上的锁
+
+* Gap Lock: 间隙锁
+
+锁定一个范围，不包括记录本身
+
+阻止多个事务将记录插入到统一范围
+
+* Next-Key Lock: 
+
+Gap Lock+Record Lock，
+
+锁定一个范围，并且锁定记录本身
+
+## 死锁
+
+## 阻塞

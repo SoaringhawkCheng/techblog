@@ -3,7 +3,7 @@ title: 「高性能MYSQL」学习笔记[DOING]
 catalog: true
 date: 2019-04-05 14:38:09
 subtitle: 
-tags: 
+tags:
 - database
 categories:
 - 工程
@@ -589,9 +589,6 @@ INNODB选择最小的非聚簇索引来扫表，前提是没有where和groupby
 UNION会给临时表加DISTINCT选项，导致整个临时表做唯一性检查
 
 除非需要去重，否则一定要使用UNION ALL
-
-
-
 
 # 脑图
 [链接](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/4.png?raw=true)
