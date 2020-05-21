@@ -1,5 +1,5 @@
 ---
-title: 「」
+title: 「Linux高性能服务编程」学习笔记[DOING]
 catalog: true
 date: 2020-05-11 20:07:18
 subtitle:
@@ -9,7 +9,7 @@ tags:
 categories:
 - 编程
 ---
-> 书籍豆瓣链接：[《Redis设计与实现》](https://book.douban.com/subject/25900156/)
+> 书籍豆瓣链接：[《Linux高性能服务器编程》](https://book.douban.com/subject/24722611/)
 > 
 > 开始学习时间：
 > 
