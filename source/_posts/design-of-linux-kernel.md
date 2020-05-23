@@ -40,7 +40,7 @@ linux内核分三层：
 5. 设备驱动器
 
 ### 用户空间和内核空间
-#### 地址空间
+#### 地址空间划分
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/address-space.png?raw=true)
 
 内核地址空间存放的是内核代码和数据
@@ -48,6 +48,11 @@ linux内核分三层：
 用户空间存放的是用户程序的代码和数据
 
 Linux使用两级保护机制: 0级供内核使用，3级供用户使用
+
+#### 地址映射模型
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/address-mapping.png?raw=true)
+
+进程代码中的地址是逻辑地址，经过全局描述符表GDT映射为线性地址，经过TLB和PTE映射为物理地址
 
 #### 进程执行状态
 
@@ -352,6 +357,17 @@ sched entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 ## 定时器和时间管理
 
 ## 内存管理
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-space.png?raw=true)
+### 页和区
+内核把内核地址空间划分为不同的区：
+
+| 区  | 描述  | 物理内存 |
+|:------------ |:------------| :--------|
+| ZONE_DMA     | DMA使用的页   | <16MB    |
+| ZONE_NORMAL  | 正常可寻址的页 | 16~896MB |
+| ZONE_HIGHMEM | 动态映射的页  | >896MB   |
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/high-mem.jpg?raw=true)
 
 ### slab层
 slab层把不同的对象划分为高速缓存组，每种对象类型对应一个高速缓存
