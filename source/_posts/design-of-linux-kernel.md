@@ -344,8 +344,6 @@ sched entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 
 ## 内核数据结构
 
-
-
 ## 中断和中断处理
 
 ## 中断下半部
@@ -357,26 +355,152 @@ sched entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 ## 定时器和时间管理
 
 ## 内存管理
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-space.png?raw=true)
-### 页和区
+### 内存管理结构
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/uma.png?raw=true)
+
+现代计算机的内存组织形式包括UMA和NUMA，其中UMA中所有cpu访问内存的速度都一样快，而在NUMA系统中，每个cpu访问不同内存的速度并不一样。通常，NUMA计算机每个cpu都有自己的本地内存，各个cpu不仅可以访问自己的本地内存，也可以访问其它cpu的内存，但是访问本地内存的速度最快，访问其它cpu内存的速度依其与本cpu的距离增加而依次减慢。
+
+#### 内存管理单位
+Linux对内存的管理划分成三个层次，分别是Node、Zone、Page。对这三个层次简介如下：
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mem-tree.png?raw=true)
+
+层次|说明|
+---|---|
+Node(节点)|CPU被划分成多个节点，每个节点都有自己的一块内存，可以参考NUMA架构有关节点的介绍|
+Zone(区)|每一个Node（节点）中的内存被划分成多个管理区域（Zone），用于表示不同范围的内存|
+Page(页)|每一个管理区又进一步被划分为多个页面，页面是内存管理中最基础的分配单位|
+
+#### 内核地址空间
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-space-physical.png?raw=true)
 内核把内核地址空间划分为不同的区：
 
 | 区  | 描述  | 物理内存 |
-|:------------ |:------------| :--------|
+|------------ |------------|--------|
 | ZONE_DMA     | DMA使用的页   | <16MB    |
 | ZONE_NORMAL  | 正常可寻址的页 | 16~896MB |
 | ZONE_HIGHMEM | 动态映射的页  | >896MB   |
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/high-mem.jpg?raw=true)
+#### 内核内存映射
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-space-virtual.png?raw=true)
 
-### slab层
+* 低端内存
+
+包含ZONE_DMA和ZONE_NORMAL，
+
+物理地址 = 逻辑地址 – 0xC0000000
+
+* 高端内存
+
+高端内存包含ZONE_HIGHMEM，在x86体系结构中，这个区的内存不能映射到内核地址空间上，也就是没有逻辑地址
+
+### 获取高端内存
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/high-mem.png?raw=true)
+#### 临时映射(FIXADDR_START~FIXADDR_TOP) 
+
+内核在FIXADDR_START到FIXADDR_TOP之间保留了一些线性空间用于特殊需求，称为固定映射空间
+
+在这个空间中，有一部分用于高端内存的临时映射，这块空间由如下特点：
+
+1. 每个CPU占用一块空间
+2. 每个CPU占用的空间，又分为多个小空间，每个小空间是1个page，用于一个目的
+
+当要进行一次临时映射的时候，需要指定映射的目的，根据映射目的，可以找到对应的小空间，然后把这个空间的地址作为映射地址。这意味着一次临时映射会导致以前的映射被覆盖。通过 kmap_atomic() 可实现临时映射。
+
+#### 永久映射(PKMAP_BASE~FIXADDR_START)
+
+通过kmap，建立永久映射
+
+#### 动态映射(VMALLOC_START~VMALLOC_END)
+
+内核通过调用vmalloc这个区域获得内存
+
+### 内存分配
+#### 页分配
+alloc_pages 分配连续物理页，返回一个指针，指向第一个页的page结构体
+
+#### 字节分配
+kmalloc 从低端内存分配；分配的物理地址连续；一般用于分配小块内存(一般不超过128k)；kmalloc分配方式基于slab
+
+vmalloc 一般为高端内存，当内存不够才分配低端内存；分配的物理地址不连续；一般分配大内存(伙伴算法)
+
+#### slab分配
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/slab.png?raw=true)
+主要功能是作为一个通用数据结构缓存层，存储内核中经常分配并释放的对象
+
 slab层把不同的对象划分为高速缓存组，每种对象类型对应一个高速缓存
 
 高速缓存被划分为slab，slab由一个或多个物理上连续的页组成
 
 每个高速缓存有三个slab链表，full，partial，empty
 
+### 内核分配内存
+
+#### 内核栈分配
+
+[TODO](https://blog.csdn.net/yangkuanqaz85988/article/details/52403726)
+
+#### 进程栈
+
+#### 线程栈
+
+#### 内核栈
+
+#### 中断栈
+
+
+#### 按CPU数据分配
+
 ## 虚拟文件系统
+### 文件系统抽象层
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-architecture.png?raw=true)
+虚拟文件系统(VFS)是linux内核和存储设备之间的抽象层，主要有以下好处。
+
+1. 简化了应用程序的开发：应用通过统一的系统调用访问各种存储介质
+2. 简化了新文件系统加入内核的过程：新文件系统只要实现VFS的各个接口即可，不需要修改内核部分
+
+### UNIX文件
+UNIX文件系统的一些概念
+
+1. 安装点 文件系统被安装在安装点上，在全局层次结构中被称为命名空间
+2. 文件 文件数据
+3. 索引节点 文件元数据
+4. 目录项 VFS把目录项当做文件一样看待
+5. 超级块 存放文件系统信息
+
+### VFS对象
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-obj.png?raw=true)
+VFS主要有4个对象类型：
+
+1. 超级块对象 代表一个具体的已安装文件系统
+2. 索引节点对象 代表一个具体文件
+3. 目录项对象 代表一个目录项，是路径组成部分
+4. 文件对象 代表进程打开的文件
+
+#### 超级块对象
+主要存储文件系统相关的信息，包括inode与block的总量、使用量、剩余量等
+
+通常对应存储在磁盘的特定扇区中的文件系统超级块或文件系统控制块，但是对于那些基于内存的文件系统(比如proc,sysfs)，超级块是在使用时创建在内存中的
+
+#### 索引节点对象
+一个索引节点代表文件系统中的一个文件，它可以是设备或管道这样的特殊文件
+
+索引节点仅当被文件访问时，才在内存中创建
+
+#### 目录项对象
+目录项没有没有对应磁盘数据结构，VFS根据字符串形式的路径名现场创建它，由于目录项对象并非真正保存在磁盘上，所以目录项结构体没有是否被修改的标志
+
+* 目录项状态
+三种有效状态：
+
+* 目录项缓存
+
+#### 文件对象
+
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-obj-mapping.png?raw=true)
+
+### 文件系统结构
 
 ## 块I/O层
 

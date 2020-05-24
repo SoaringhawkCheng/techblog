@@ -1,5 +1,5 @@
 ---
-title: 「深入理解Kafka核心设计与实践原理」学习笔记
+title: 「深入理解Kafka」学习笔记
 catalog: true
 date: 2020-05-20 12:08:36
 subtitle:
@@ -9,8 +9,7 @@ tags:
 categories:
 - 工程
 ---
-> 书籍豆瓣链接：[《深入理解Kafka：核心设计与实践原理
-》](https://book.douban.com/subject/30437872/)
+> 书籍豆瓣链接：[《深入理解Kafka：核心设计与实践原理》](https://book.douban.com/subject/30437872/)
 > 
 > 开始学习时间：
 > 
