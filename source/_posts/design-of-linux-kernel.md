@@ -121,27 +121,27 @@ CPU在特权等级最高(0级)的内核代码中执行。当进程处于内核�
 ### 进程结构
 #### 进程任务队列
 
-task list 任务队列 双向循环链表 节点类型是task struct
+task_list 任务队列 双向循环链表 节点类型是task_struct
 
-task struct 进程描述符 包含进程信息
+task_struct 进程描述符 包含进程信息
 
 #### 进程描述符
-每个进程的thread info结构在它内核栈的尾端分配，结构中的task域存放的是指向task struct的指针
+每个进程的thread_info结构在它内核栈的尾端分配，结构中的task域存放的是指向task struct的指针
 
-task struct包含的进程信息：打开的文件，进程地址空间，挂起的信号，进程的状态
+task_struct包含的进程信息：打开的文件，进程地址空间，挂起的信号，进程的状态
 
 task struct成员：
 
-1. parent指针 指向父进程task struct
+1. parent指针 指向父进程task_struct
 2. state 进程状态
 
 #### 描述符存放
 
 内核使用唯一的值pid标志每个进程
 
-内核中大部分处理进程的代码都是直接通过task struct进行
+内核中大部分处理进程的代码都是直接通过task_struct进行
 
-通过current宏查找当前正在运行进程的task struct
+通过current宏查找当前正在运行进程的task_struct
 
 #### 进程状态
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-state.png?raw=true)
@@ -163,7 +163,7 @@ linux通过系统调用clone实现fork，clone(SIGCHLD, 0)
 
 fork步骤：
 
-1. 创建内核栈，thread info和task struct，值和当前进程完全相同
+1. 创建内核栈，thread_info和task_struct，值和当前进程完全相同
 2. 清空或设置task struct中的一些值，比如state
 3. 更新flags
 3. 分配pid
@@ -192,7 +192,7 @@ clone(CLONE_VM|CLONE_FS|CLONE_FILES|CLONE_SIGHAND, 0)
 1. 所有与进程相关联的资源被释放
 2. 向父进程发送信号，给子进程找养父，进程状态设为EXIT_ZOMBIE状态
 3. schedule切换到新的进程
-4. 仍占用的内存：内核栈，thread info和task struct，目的是给父进程提供信息
+4. 仍占用的内存：内核栈，thread_info和task_struct，目的是给父进程提供信息
 5. 父进程检索到子进程信息后，剩余内存被释放
 
 #### 孤儿进程
@@ -275,9 +275,9 @@ SCHED_RR 带时间片的SCHED_FIFO
 ### 调度实现
 #### 时间记账
 
-CFS没有时间片的概念，需要维护进程运行的时间记账sched entity，嵌入在task struct中
+CFS没有时间片的概念，需要维护进程运行的时间记账sched_entity，嵌入在task_struct中
 
-sched entity中的vruntime，存放进程的虚拟运行时间，vruntime并不是实际的运行时间，它是实际运行时间进行加权运算后的结果
+sched_entity中的vruntime，存放进程的虚拟运行时间，vruntime并不是实际的运行时间，它是实际运行时间进行加权运算后的结果
 
 #### 算法步骤
 
@@ -291,7 +291,7 @@ sched entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 等待队列 简单链表，存放休眠(被阻塞)进程
 
 ### 抢占和上下文切换
-**上下文切换**，即从一个可执行进程切换到另一个可执行进程，每个进程包含一个need resched标志
+**上下文切换**即从一个可执行进程切换到另一个可执行进程，每个进程包含一个need_resched标志
 
 #### 用户抢占
 内核即将返回用户空间，如果need resched被设置，会导致schedule被调用，此时会发生用户抢占
@@ -445,11 +445,15 @@ slab层把不同的对象划分为高速缓存组，每种对象类型对应一�
 #### 线程栈
 
 #### 内核栈
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-stack.png?raw=true)
+每个进程都有1-2页固定大小的内核栈
 
 #### 中断栈
-
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/interrupt-stack.png?raw=true)
+中断栈为每个进程提供了一个用于中断处理程序的栈，中断处理程序不用再和被中断进程共享一个内核栈，对每个进程仅仅耗费了一页
 
 #### 按CPU数据分配
+略
 
 ## 虚拟文件系统
 ### 文件系统抽象层
@@ -468,8 +472,9 @@ UNIX文件系统的一些概念
 4. 目录项 VFS把目录项当做文件一样看待
 5. 超级块 存放文件系统信息
 
-### VFS对象
+### VFS对象和数据结构
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-obj.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-obj-mapping.png?raw=true)
 VFS主要有4个对象类型：
 
 1. 超级块对象 代表一个具体的已安装文件系统
@@ -488,25 +493,189 @@ VFS主要有4个对象类型：
 索引节点仅当被文件访问时，才在内存中创建
 
 #### 目录项对象
-目录项没有没有对应磁盘数据结构，VFS根据字符串形式的路径名现场创建它，由于目录项对象并非真正保存在磁盘上，所以目录项结构体没有是否被修改的标志
+目录项没有没有对应磁盘数据结构，VFS根据字符串形式的路径名现场创建它，由于目录项对象并非真正保存在磁盘上，所以目录项结构体没有是否被修改的标志。路径/bin/vi中/,bin和vi都是目录项，前两个是目录，最后一个是普通文件
 
-* 目录项状态
-三种有效状态：
+目录项状态
 
-* 目录项缓存
+1. 被使用：对应一个有效的索引节点，并且该对象由一个或多个使用者
+2. 未使用：对应一个有效的索引节点，但是VFS当前并没有使用这个目录项
+3. 负状态：没有对应的有效索引节点（可能索引节点被删除或者路径不存在了）
+
+目录项缓存
+
+1. 已使用目录链表
+2. 最近被使用目录双向链表，用于缓存
+3. 散列表，快速定位
 
 #### 文件对象
+只存在于内存中，是已打开文件在内存中的表示，反过来指向目录项
 
+#### 文件系统相关数据结构
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vfs-obj-mapping.png?raw=true)
+file_system_type 描述文件系统类型
+
+vfsmount 描述一个安装文件系统的实例
+
+每种文件系统，不管有多少个实例安装到系统中，都只有一个file_system_type
+
+#### 进程相关数据结构
+
+file_struct 进程描述符中的files目录项指向，打开的文件及文件描述符
+
+fs_struct 进程描述符中的fs域指向，文件系统和进程相关的信息
+
+namespace 命名空间，所有进程共享同样的命名空间，只有在进行clone()操作时使用CLONE_NEWS标志，才会给进程一个唯一的命名空间结构体拷贝
 
 ### 文件系统结构
+#### 磁盘结构
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/fs-structure.png?raw=true)
+自举块(boot block)：占用1 block；主要存储分区的操作系统类型、分区起始地址；pc联盟规定的大小，和各个文件系统无关；每个分区只有一个；
+
+超级块：占用1 block；存储分区操作系统版本、块大小、文件系统；
+
+块组描述表(GDT)：占用3 block；存储一个块组的描述信息；
+
+块位图(block bitmap)：占用1 block;每个比特位表示一个数据块是否被标记使用；1：已使用，0：未使用；
+
+inode 位图(inode bitmap)：占用1 block;每一个比特位表示一个inode节点。1：已使用，0：未使用；
+
+inode节点：占用128B；分为文件属性部分和数据指针部分；数据指针占用60B，长度为15的指针数组；每个数据块的大小是1 block，那么15个指针最多只能维护15*1K个文件大小，显然，文件大小的上限太小了
+
+数据块：存储文件的内容；
+
+#### 三级间接寻址
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/3-level-inode.png?raw=true)
+
+文件系统通过三级间接寻址的方式来提高文件大小的上限。块大小若以1 block计算，文件大小的上限为16G，若以4 block为块大小，那文件大小的上限超过了1T；ext4文件系统中，数据指针有256B，那文件大小上限就非常大了；
+
+#### 数据块存储内容
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/data-block-structure.png?raw=true)
+
+数据块中存储的是一条一条的记录项，每条记录项都由文件名、inode编号、记录长度(该记录项首地址到下一条记录项的首地址的长度)。每一个记录项就是该目录下“ls -a”的结果
+
+#### 普通文件结构
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/file-structure.png?raw=true)
+
+#### 目录文件结构
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/entry-structure.png?raw=true)
 
 ## 块I/O层
 
+### 块设备简介
+
+I/O设备主要有2类:
+
+1. 字符设备 只能顺序读写设备中的内容，比如 串口设备，键盘
+2. 块设备 能够随机读写设备中的内容，比如 硬盘，U盘
+
+#### 扇区
+
+物理上的最小寻址单元
+
+**原子性问题**操作系统与磁盘的数据交换单位是扇区。一次操作，是写一个扇区大小(512b)的数据。如果写入数据小于一个扇区，只需要无缓冲的写入到磁盘。磁盘特性保证，这种情况可以原子地写入磁盘
+
+#### 块
+
+逻辑上的最小寻址单元，内核执行的所有磁盘操作都是按照块进行的
+
+块的大小一般是扇区整数倍，并且小于等于页的大小
+
+### 内核访问块设备方法
+内核通过文件系统访问块设备时，需要先把块读入到内存中。所以文件系统为了管理块设备，必须管理块和内存页之间的映射。
+
+内核中有2种方法来管理块和内存页之间的映射。
+
+1. 缓冲区和缓冲区头
+2. bio
+
+#### 缓冲区和缓冲区头
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/page-block.png?raw=true)
+
+每个块都是一个缓冲区，同时对每个块都定义一个缓冲区头来描述它。
+
+由于块的大小是小于内存页的大小的，所以每个内存页会包含一个或者多个块
+
+在2.6之前的内核中，主要就是通过缓冲区头来管理块和内存之间的映射的。
+
+用缓冲区头来管理内核的 I/O 操作主要存在以下2个弊端，所以在2.6开始的内核中，缓冲区头的作用大大降低了
+
+缓冲区头管理
+
+1. 对内核而言，操作内存页是最为简便和高效的。而且每个块对应一个缓冲区头，导致内存的利用率降低
+2. 每个缓冲区头只能表示一个块，所以内核在处理大数据时，会分解为对一个个小的块的操作，造成不必要的负担和空间浪费
+
+#### bio
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/bio.png?raw=true)
+
+目前，块IO操作的基本容器由bio结构体表示
+
+bio结构体的出现就是为了改善上面缓冲区头的2个弊端，它表示了一次 I/O 操作所涉及到的所有内存页。
+
+bio相当于在缓冲区上又封装了一层，使得内核在 I/O操作时只要针对一个或多个内存页即可，不用再去管理磁盘块的部分。
+
+使用bio结构体还有以下好处：
+
+1. bio结构体很容易处理高端内存，因为它处理的是内存页而不是直接指针
+2. bio结构体既可以代表普通页I/O，也可以代表直接I/O(指不通过**页高速缓存**的IO操作)
+3. bio结构体便于执行分散-集中（矢量化的）块I/O操作，操作中的数据可以取自多个物理页面
+
+### IO调度
+略
+
 ## 进程地址空间
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-space.jpg?raw=true)
+
+### 内存描述符
+内核使用内存描述符结构体mm_struct表示进程的地址空间
+
+进程描述符task_struct结构体中的mm域存放着该进程使用的内存描述符
+
+#### 分配内存描述符
+子进程使用allocate_mm从slab缓存中分配得到mm_struct
+
+线程创建，调用clone设置CLONE_VM标志，会共享mm_struct
+
+#### 撤销内存描述符
+mm_struct中的mm_users计数降到零，将调用mmdrop函数
+
+#### 内核线程
+内核线程没有进程地址空间，不需要自己的mm_struct
+
+但是内核仍然需要页表，来访问内核空间(高端内存)
+
+故内核的mm为NULL，active_mm为前一个进程的mm_struct
+
+### 虚拟内存区域
+
+### 地址空间与页表
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/pte.png?raw=true)
 
 ## 页高速缓存和页回写
+
+### 缓存简介
+
+内核开始一个读操作，检查需要的数据是否在高速缓存中
+
+1. 缓存命中，则放弃访问磁盘，直接从内存中读取
+2. 缓存未命中，调度块IO操作从磁盘读取，内核将读来的数据放入页缓存中
+
+#### 写缓存策略
+
+不缓存(nowrite) 也就是不缓存写操作，当对缓存中的数据进行写操作时，直接写入磁盘，同时使此数据的缓存失效
+
+写透缓存(write-through) 写数据时同时更新磁盘和缓存
+
+回写(copy-write or write-behind) 写数据时直接写到缓存，由另外的进程(回写进程)在合适的时候将数据同步到磁盘
+
+#### 缓存回收策略
+略
+
+### 页高速缓存
+
+
+
+### 页回写
+
 
 ## 设备与模块
 
