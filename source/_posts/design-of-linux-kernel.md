@@ -50,6 +50,14 @@ linux内核分三层：
 Linux使用两级保护机制: 0级供内核使用，3级供用户使用
 
 #### 地址映射模型
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mmu.png?raw=true)
+
+IOMMU，IO管理单元，作用是连接DMA-capable I/O总线（Direct Memory Access-capable I/O Bus）和主存（main memory），IOMMU将设备访问的虚拟地址转化为物理地址
+
+DMA(direct memory access)，直接存储器访问，传输将数据从一个地址空间复制到另外一个地址空间。当CPU初始化这个传输动作，传输动作本身是由DMA控制器来实行和完成
+
+MMU，内存管理单元，是负责处理CPU的内存访问请求的计算机请求，功能包括虚拟地址到物理地址转换
+
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/address-mapping.png?raw=true)
 
 进程代码中的地址是逻辑地址，经过全局描述符表GDT映射为线性地址，经过TLB和PTE映射为物理地址
@@ -588,9 +596,7 @@ I/O设备主要有2类:
 1. 缓冲区和缓冲区头
 2. bio
 
-#### 缓冲区和缓冲区头
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/page-block.png?raw=true)
-
+#### 缓冲区(2.4.10不存在)
 每个块都是一个缓冲区，同时对每个块都定义一个缓冲区头来描述它。
 
 由于块的大小是小于内存页的大小的，所以每个内存页会包含一个或者多个块
@@ -620,7 +626,7 @@ bio相当于在缓冲区上又封装了一层，使得内核在 I/O操作时只�
 3. bio结构体便于执行分散-集中（矢量化的）块I/O操作，操作中的数据可以取自多个物理页面
 
 ### IO调度
-略
+块设备将它们挂起的快IO请求保存在请求队列reques_queue中，队列中的reques结构体包含多个bio
 
 ## 进程地址空间
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-space.jpg?raw=true)
@@ -646,18 +652,42 @@ mm_struct中的mm_users计数降到零，将调用mmdrop函数
 故内核的mm为NULL，active_mm为前一个进程的mm_struct
 
 ### 虚拟内存区域
+vm_area_struct描述了指定地址空间内连续区间上的一个独立内存范围，比如堆和栈就是一个内存区域
+
+内存描述符的mmap域，使用单链表连接所有的内存区域对象vm_area_struct，内存描述符的mm_rb使用红黑树组织所有vm_area_struct
+
+链表适合遍历，红黑树适合用于查找定位
+
+### 内存映射
+内核使用do_mmap创建一个新的线性区间
+
+匿名映射
+
+文件映射 指定了文件名和偏移量
 
 ### 地址空间与页表
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/pte.png?raw=true)
 
+地址空间中的地址都是虚拟内存中的地址，而CPU需要操作的是物理内存，所以需要一个将虚拟地址映射到物理地址的机制。
+
+这个机制就是页表，linux中使用3级页面来完成虚拟地址到物理地址的转换。
+
+1. PGD - 全局页目录，包含一个 pgd_t 类型数组，多数体系结构中 pgd_t 类型就是一个无符号长整型
+2. PMD - 中间页目录，它是个 pmd_t 类型数组
+3. PTE - 简称页表，包含一个 pte_t 类型的页表项，该页表项指向物理页面
+
+**TLB块表**是一个缓存虚拟地址到物理地址映射的硬件
+
 ## 页高速缓存和页回写
-
 ### 缓存简介
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/read-disk.png?raw=true)
 
-内核开始一个读操作，检查需要的数据是否在高速缓存中
+内核开始一个读操作，检查需要的数据是否在页高速缓存中
 
-1. 缓存命中，则放弃访问磁盘，直接从内存中读取
-2. 缓存未命中，调度块IO操作从磁盘读取，内核将读来的数据放入页缓存中
+1. 缓存未命中，调度块IO操作从磁盘读取，内核将读来的数据放入页缓存中，以满足用户态进程的读请求
+2. 缓存命中，则放弃访问磁盘，直接从内存中读取
+
+注意区分页高速缓存和用户态进程的缓冲区
 
 #### 写缓存策略
 
@@ -670,9 +700,20 @@ mm_struct中的mm_users计数降到零，将调用mmdrop函数
 #### 缓存回收策略
 略
 
-### 页高速缓存
+### 缓存数据结构
+#### 页高速缓存，块和页描述符的关系
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/page-block.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/page-cache-bio.jpg?raw=true)
+#### address_space对象
+address_space结构体是虚拟内存区域vm_area_struct的物理对等体
 
+address_space和vm_area_struct的关系是一对多的关系
 
+host域指向所属inode
+
+page_tree域是一个包含所有page的radix树
+
+指定文件偏移量去page_tree中搜，如果不存在，分配一个page，用于从用户空间拷贝数据，或者从磁盘读入数据
 
 ### 页回写
 
