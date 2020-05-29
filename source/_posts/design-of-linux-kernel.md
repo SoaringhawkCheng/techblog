@@ -9,7 +9,12 @@ tags:
 categories:
 - 工程
 ---
-> 书籍豆瓣链接：[《Linux内核设计与实现》](https://book.douban.com/subject/6097773/) [《深入理解Linux内核》](https://book.douban.com/subject/2287506/)
+> 书籍豆瓣链接：[《Linux内核设计与实现》](https://book.douban.com/subject/6097773/) 
+> 
+> 相关书籍链接：
+> [《Linux内核设计的艺术》](https://book.douban.com/subject/24708145/)
+> [《深入理解Linux内核》](https://book.douban.com/subject/2287506/)
+> [《深入Linux内核架构》](https://book.douban.com/subject/4843567/)
 > 
 > 开始学习时间：
 > 
@@ -132,6 +137,7 @@ task_list 任务队列 双向循环链表 节点类型是task_struct
 task_struct 进程描述符 包含进程信息
 
 #### 进程描述符
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-stack.png?raw=true)
 进程的thread_info和内核栈放在连续的两页框中，thread_info中的task域存放的是指向task struct的指针
 
 task_struct包含的进程信息：打开的文件，进程地址空间，挂起的信号，进程的状态
@@ -366,7 +372,7 @@ sched_entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 
 现代计算机的内存组织形式包括UMA和NUMA，其中UMA中所有cpu访问内存的速度都一样快，而在NUMA系统中，每个cpu访问不同内存的速度并不一样。通常，NUMA计算机每个cpu都有自己的本地内存，各个cpu不仅可以访问自己的本地内存，也可以访问其它cpu的内存，但是访问本地内存的速度最快，访问其它cpu内存的速度依其与本cpu的距离增加而依次减慢。
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mem-manage.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mem-manage-architecture.jpg?raw=true)
 
 #### 内存管理单位
 **mem_mmap**内核全局变量，包含系统中所有的物理内存对应的page数组
@@ -391,29 +397,37 @@ Page(页)|每一个管理区又进一步被划分为多个页面，页面是内�
 | ZONE_NORMAL  | 正常可寻址的页 | 16~896MB |
 | ZONE_HIGHMEM | 动态映射的页  | >896MB   |
 
-#### 内核内存映射
+#### 内存分区介绍
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/virtual-zone-mapping.jpg?raw=true)
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-virtual-zone.jpg?raw=true)
+
 * 低端内存
 
 包含ZONE_DMA和ZONE_NORMAL，
 
-物理地址 = 逻辑地址 – 0xC0000000
-
 ZONE_DMA的范围是0~16M，该区域的物理页面专门供I/O设备的DMA使用。之所以需要单独管理DMA的物理页面，是因为DMA使用物理地址访问内存，不经过MMU，并且需要连续的缓冲区，所以为了能够提供物理上连续的缓冲区，必须从物理地址空间专门划分一段区域用于DMA。
 
-由于ZONE_NORMAL和内核线性空间存在直接映射关系，所以内核会将频繁使用的数据如kernel代码、GDT、IDT、PGD、mem_map数组等放在ZONE_NORMAL里
+由于ZONE_NORMAL和内核线性空间存在直接映射关系，所以内核会将频繁使用的数据如kernel代码、GDT、IDT、PGD(page global directory)、mem_map数组等放在ZONE_NORMAL里
 
 * 高端内存
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-space-virtual.png?raw=true)
-
 高端内存包含ZONE_HIGHMEM，在x86体系结构中，这个区的内存不能映射到内核地址空间上，也就是**没有逻辑地址**
 
-### 获取高端内存
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/high-mem.png?raw=true)
-#### 临时映射(FIXADDR_START~FIXADDR_TOP) 
+### 内核地址空间
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-virtual-zone.jpg?raw=true)
+#### 直接映射空间(PAGE_OFFSET~VMALLOC_START)
+物理地址 = 逻辑地址 – 0xC0000000
 
+kmalloc和__get_free_page()分配的是这里的页面，二者是借助slab分配器，直接分配物理页再转换为逻辑地址（物理地址连续）。适合分配小段内存。
+
+此区域包含了内核镜像、物理页框表mem_map，内核代码区，内核数据区，GDT，IDT，PGD等资源。
+
+#### 动态映射空间(VMALLOC_START~VMALLOC_END)
+内核通过调用vmalloc这个区域获得内存
+
+#### 永久映射空间(PKMAP_BASE~FIXADDR_START)
+通过kmap，建立永久映射
+
+#### 临时映射空间(FIXADDR_START~FIXADDR_TOP) 
 内核在FIXADDR_START到FIXADDR_TOP之间保留了一些线性空间用于特殊需求，称为固定映射空间
 
 在这个空间中，有一部分用于高端内存的临时映射，这块空间由如下特点：
@@ -423,52 +437,50 @@ ZONE_DMA的范围是0~16M，该区域的物理页面专门供I/O设备的DMA使�
 
 当要进行一次临时映射的时候，需要指定映射的目的，根据映射目的，可以找到对应的小空间，然后把这个空间的地址作为映射地址。这意味着一次临时映射会导致以前的映射被覆盖。通过 kmap_atomic() 可实现临时映射。
 
-#### 永久映射(PKMAP_BASE~FIXADDR_START)
+### 内存分配系统
+#### 伙伴系统(页分配)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/buddy.gif?raw=true)
 
-通过kmap，建立永久映射
+实际应用中，经常需要分配一组连续的页框，而频繁地申请和释放不同大小的连续页框，必然导致在已分配页框的内存块中分散了许多小块的空闲页框。这样，即使这些页框是空闲的，其他需要分配连续页框的应用也很难得到满足。
 
-#### 动态映射(VMALLOC_START~VMALLOC_END)
+为了避免出现这种情况，Linux内核中引入了伙伴系统算法(buddy system)。伙伴系统（buddy system）是以页为单位管理和分配内存。
 
-内核通过调用vmalloc这个区域获得内存
+管理区zone上的free_area域，把所有的空闲页框分组为11个块链表，每个块链表分别包含大小为1，2，4，8，16，32，64，128，256，512和1024个连续页框的页框块。最大可以申请1024个连续页框，对应4MB大小的连续内存。每个页框块的第一个页框的物理地址是该块大小的整数倍。
 
-### 内存分配
-#### 页分配
-alloc_pages 分配连续物理页，返回一个指针，指向第一个页的page结构体
-
-#### 字节分配
-kmalloc 从ZONE_NORMAL分配；分配的物理地址连续；一般用于分配小块内存(一般不超过128k)；kmalloc分配方式基于slab
-
-vmalloc 一般为ZONE_HIGHMEM，当内存不够才分配ZONE_NORMAL；分配的物理地址不连续；一般分配大内存，需要页表
-
-#### slab分配
+#### slab分配层
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/slab.png?raw=true)
-主要功能是作为一个通用数据结构缓存层，存储内核中经常分配并释放的对象
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kmem-cache.gif?raw=true)
 
-slab层把不同的对象划分为高速缓存组，每种对象类型对应一个高速缓存
+slab是Linux操作系统的一种内存分配机制。其工作是针对一些经常分配并释放的对象，如进程描述符等，这些对象的大小一般比较小，如果直接采用伙伴系统来进行分配和释放，不仅会造成大量的内碎片，而且处理速度也太慢
 
-高速缓存被划分为slab，slab由一个或多个物理上连续的页组成
+而slab分配器是基于对象进行管理的，相同类型的对象归为一类。slab层按不同的对象划分为高速缓存组，每种对象类型对应一个高速缓存kmem_cache
 
-每个高速缓存有三个slab链表，full，partial，empty
+高速缓存kmem_cache被划分为slab，slab由一个或多个物理上连续的页组成，每个高速缓存有三个slab链表，full，partial，empty
 
-### 内核分配内存
+### 内存分配方式
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mem-alloc.jpg?raw=true)
+#### kmalloc
+调用伙伴系统的get_free_page从ZONE_NORMAL分配，分配的线性和物理地址连续。一般用于分配小块内存(一般不超过128k)，kmalloc分配方式基于slab
 
-#### 内核栈分配
+#### vmalloc
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vmalloc.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vmalloc.jpg?raw=true)
 
-[TODO](https://blog.csdn.net/yangkuanqaz85988/article/details/52403726)
+优先使用ZONE_HIGHMEM，当内存不够才分配ZONE_NORMAL。分配的物理地址不连续；一般分配大内存，需要页表。vmalloc分配的物理页不会被交换出去
 
-#### 进程栈
+每次调用vmalloc()在内核成功申请一段连续虚拟内存后，都会对应一个vm_struct子区域。使用全局变量**vmlist**指向vm_struct链表
 
-#### 线程栈
+#### kmap
+略
 
-#### 内核栈
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-stack.png?raw=true)
-
-每个进程都有1-2页固定大小的内核栈
-
-#### 中断栈
+### 内存分配维度
+#### 按进程分配
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/interrupt-stack.png?raw=true)
+内核栈 每个进程都有1-2页固定大小的内核栈
 
-中断栈为每个进程提供了一个用于中断处理程序的栈，中断处理程序不用再和被中断进程共享一个内核栈，对每个进程仅仅耗费了一页
+中断栈 中断栈为每个进程提供了一个用于中断处理程序的栈，中断处理程序不用再和被中断进程共享一个内核栈，对每个进程仅仅耗费了一页
+
+[各种栈介绍](https://blog.csdn.net/yangkuanqaz85988/article/details/52403726)
 
 #### 按CPU数据分配
 略
@@ -677,7 +689,7 @@ mm_struct中的mm_users计数降到零，将调用mmdrop函数
 故内核的mm为NULL，active_mm为前一个进程的mm_struct
 
 ### 虚拟内存区域
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vm-area.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/vm-area-struct.png?raw=true)
 
 vm_area_struct描述了指定地址空间内连续区间上的一个独立内存范围，比如堆和栈就是一个内存区域
 
@@ -707,6 +719,8 @@ vm_area_struct->shared 关联address_space->i_mmap或address_space->i_mmap_nonli
 3. PTE - 简称页表，包含一个 pte_t 类型的页表项，该页表项指向物理页面
 
 **TLB块表**是一个缓存虚拟地址到物理地址映射的硬件
+
+### 内存反向映射
 
 ## 页高速缓存和页回写
 ### 缓存简介
