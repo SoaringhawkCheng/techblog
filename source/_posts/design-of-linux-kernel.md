@@ -1,5 +1,5 @@
 ---
-title: 「Linux内核设计与实现」学习笔记
+title: 「Linux内核设计与实现&深入理解Linux内核」学习笔记
 catalog: true
 date: 2020-02-27 22:17:27
 subtitle:
@@ -9,11 +9,12 @@ tags:
 categories:
 - 工程
 ---
-> 书籍豆瓣链接：[《Linux内核设计与实现》](https://book.douban.com/subject/6097773/) 
+> 书籍豆瓣链接：
+> [《Linux内核设计与实现》](https://book.douban.com/subject/6097773/) 
+> [《深入理解Linux内核》](https://book.douban.com/subject/2287506/)
 > 
 > 相关书籍链接：
 > [《Linux内核设计的艺术》](https://book.douban.com/subject/24708145/)
-> [《深入理解Linux内核》](https://book.douban.com/subject/2287506/)
 > [《深入Linux内核架构》](https://book.douban.com/subject/4843567/)
 > 
 > 开始学习时间：
@@ -22,7 +23,7 @@ categories:
 > 
 > 实际完成时间：
 
-## Linux内核简介
+## 绪论
 ### 内核结构
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/os-architecture.png?raw=true)
 
@@ -42,6 +43,41 @@ linux内核分三层：
 4. 网络栈
 5. 设备驱动器
 
+### 特性
+#### 单内核微内核
+
+1. 单内核
+
+将内核整体上作为单独的大过程实现，运行在一个单独的地址空间
+
+2. 微内核
+
+划分为多个独立的过程，运行在各自的地址空间上，使用IPC通信
+
+#### Linux内核特性
+
+1. 支持动态加载内核模块
+2. 支持对称多处理(SMP)，各处理器共享内存子系统以及总线结构
+3. 可以抢占
+4. 不区分线程进程
+
+### 内核开发的准备
+开发内核代码与开发用户代码的差异
+
+1. 无标准C库
+2. 必须使用GNU C
+
+	内联函数 将性能要求高，代码长度短的函数定义为内联
+	
+	内联汇编 使用C语言和汇编混编，偏底层或执行时间严格，一般使用汇编
+	
+3. 没有内存保护，不分页
+4. 内核栈小而固定，2页(64位2*16k)
+5. 同步和并发
+
+	内核支持异步中断，SMP和抢占，容易产生竞争条件
+
+## 内存寻址
 ### 用户空间和内核空间
 #### 地址空间划分
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/address-space.png?raw=true)
@@ -94,40 +130,6 @@ CPU在特权等级最高(0级)的内核代码中执行。当进程处于内核�
 
 可以看作硬件传递过来的参数以及内核需要保存的一些其他环境(当前)
 
-### 特性
-#### 单内核微内核
-
-1. 单内核
-
-将内核整体上作为单独的大过程实现，运行在一个单独的地址空间
-
-2. 微内核
-
-划分为多个独立的过程，运行在各自的地址空间上，使用IPC通信
-
-#### Linux内核特性
-
-1. 支持动态加载内核模块
-2. 支持对称多处理(SMP)，各处理器共享内存子系统以及总线结构
-3. 可以抢占
-4. 不区分线程进程
-
-## 内核开发的准备
-开发内核代码与开发用户代码的差异
-
-1. 无标准C库
-2. 必须使用GNU C
-
-	内联函数 将性能要求高，代码长度短的函数定义为内联
-	
-	内联汇编 使用C语言和汇编混编，偏底层或执行时间严格，一般使用汇编
-	
-3. 没有内存保护，不分页
-4. 内核栈小而固定，2页(64位2*16k)
-5. 同步和并发
-
-	内核支持异步中断，SMP和抢占，容易产生竞争条件
-
 ## 进程管理
 ### 进程结构
 #### 进程任务队列
@@ -138,6 +140,7 @@ task_struct 进程描述符 包含进程信息
 
 #### 进程描述符
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/kernel-stack.png?raw=true)
+
 进程的thread_info和内核栈放在连续的两页框中，thread_info中的task域存放的是指向task struct的指针
 
 task_struct包含的进程信息：打开的文件，进程地址空间，挂起的信号，进程的状态
@@ -372,8 +375,6 @@ sched_entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 
 现代计算机的内存组织形式包括UMA和NUMA，其中UMA中所有cpu访问内存的速度都一样快，而在NUMA系统中，每个cpu访问不同内存的速度并不一样。通常，NUMA计算机每个cpu都有自己的本地内存，各个cpu不仅可以访问自己的本地内存，也可以访问其它cpu的内存，但是访问本地内存的速度最快，访问其它cpu内存的速度依其与本cpu的距离增加而依次减慢。
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mem-manage-architecture.jpg?raw=true)
-
 #### 内存管理单位
 **mem_mmap**内核全局变量，包含系统中所有的物理内存对应的page数组
 
@@ -436,6 +437,9 @@ kmalloc和__get_free_page()分配的是这里的页面，二者是借助slab分�
 2. 每个CPU占用的空间，又分为多个小空间，每个小空间是1个page，用于一个目的
 
 当要进行一次临时映射的时候，需要指定映射的目的，根据映射目的，可以找到对应的小空间，然后把这个空间的地址作为映射地址。这意味着一次临时映射会导致以前的映射被覆盖。通过 kmap_atomic() 可实现临时映射。
+
+### 进程地址空间
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-space.jpg?raw=true)
 
 ### 内存分配系统
 #### 伙伴系统(页分配)
@@ -540,8 +544,6 @@ VFS主要有4个对象类型：
 
 #### 文件对象
 只存在于内存中，是已打开文件在内存中的表示，反过来指向目录项
-
-file->address_space 页缓存映射
 
 #### 文件系统相关数据结构
 
@@ -666,8 +668,7 @@ bio相当于在缓冲区上又封装了一层，使得内核在 I/O操作时只�
 块设备将它们挂起的快IO请求保存在请求队列reques_queue中，队列中的reques结构体包含多个bio
 
 ## 进程地址空间
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-space.jpg?raw=true)
-
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-architecture.gif?raw=true)
 ### 内存描述符
 内核使用内存描述符结构体mm_struct表示进程的地址空间
 
@@ -693,21 +694,41 @@ mm_struct中的mm_users计数降到零，将调用mmdrop函数
 
 vm_area_struct描述了指定地址空间内连续区间上的一个独立内存范围，比如堆和栈就是一个内存区域
 
+线性区分为匿名映射线性区和文件映射线性区，
+
 内存描述符的mmap域，使用单链表连接所有的内存区域对象vm_area_struct，内存描述符的mm_rb使用红黑树组织所有vm_area_struct
 
 链表适合遍历，红黑树适合用于查找定位
 
 vm_area_struct->shared 关联address_space->i_mmap或address_space->i_mmap_nonlinear
 
+vm_area_struct->anon_vma_chain 指向匿名线性区立链表头
+
+vm_area_struct->anon_vma 指向anon_vma，匿名线性区描述符
+
 ### 内存映射
-内核使用do_mmap创建一个新的线性区间
+内核使用do_mmap创建一个新的线性区间，用户空间可以通过mmap调用do_mmap
 
 1. 匿名映射
 2. 文件映射 指定了文件名和偏移量
 
-用户空间可以通过mmap调用do_mmap
+#### 文件映射
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/file-mapping.png?raw=true)
 
-### 地址空间与页表
+address_space用于管理文件映射的页面的结构
+
+address_space->host域指向所属inode
+
+address_space->page_tree域是一个包含所有page的radix树，指定文件偏移量offset去page_tree中搜，如果不存在，分配一个page，用于从用户空间拷贝数据，或者从磁盘读入数据
+
+address_space->immap是个radix优先搜索树PST，PST的主要作用是执行反向映射
+
+address_sapce->immap_nonlinear存放一个双向链表，成员是非线性映射的vm_area_struct
+
+#### 匿名映射
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/page-remap.png?raw=true)
+
+### 页表与反向映射
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/pte.png?raw=true)
 
 地址空间中的地址都是虚拟内存中的地址，而CPU需要操作的是物理内存，所以需要一个将虚拟地址映射到物理地址的机制。
@@ -720,9 +741,7 @@ vm_area_struct->shared 关联address_space->i_mmap或address_space->i_mmap_nonli
 
 **TLB块表**是一个缓存虚拟地址到物理地址映射的硬件
 
-### 内存反向映射
-
-## 页高速缓存和页回写
+## 页高速缓存
 ### 缓存简介
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/read-disk.png?raw=true)
 
@@ -732,6 +751,14 @@ vm_area_struct->shared 关联address_space->i_mmap或address_space->i_mmap_nonli
 2. 缓存命中，则放弃访问磁盘，直接从内存中读取
 
 注意区分页高速缓存和用户态进程的缓冲区
+
+#### 缓存页类型
+
+1. 
+2. 直接从块设备文件
+3. 含有用户态进程的数据页，但页中的数据已被交换到磁盘
+4. 
+
 
 #### 写缓存策略
 不缓存(nowrite) 也就是不缓存写操作，当对缓存中的数据进行写操作时，直接写入磁盘，同时使此数据的缓存失效
@@ -755,7 +782,9 @@ address_space->page_tree域是一个包含所有page的radix树
 
 指定文件偏移量offset去page_tree中搜，如果不存在，分配一个page，用于从用户空间拷贝数据，或者从磁盘读入数据
 
-### 页回写
+## 交换缓存
+
+
 
 
 ## 设备与模块
