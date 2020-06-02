@@ -294,7 +294,7 @@ sched_entity中的vruntime，存放进程的虚拟运行时间，vruntime并不�
 
 #### 算法步骤
 
-1. 计算每个进程的vruntime，通过update_curr()函数更新进程的vruntime。
+1. 计算每个进程的vruntime，通过update_curr()函数更新进程的vruntime
 2. 选择具有最小vruntime的进程投入运行。
 3. 进程运行完后，更新进程的vruntime，转入步骤2)
 
@@ -758,6 +758,8 @@ address_space->page_tree域是一个包含所有page的radix树，指定文件�
 4. 含有用户态进程数据的页，但页中的数据已经被交换到磁盘
 5. 属于特殊文件系统的页，如IPC所使用的特殊文件系统shm
 
+页高速缓存中的每个页所包含的数据肯定属于某个文件，这个文件称为页的所有者owner
+
 ### 磁盘IO方式
 #### 标准IO
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/io.png?raw=true)
@@ -860,6 +862,10 @@ swap_map是一个计数器数组，表示共享换出页的进程数
 
 #### 交换高速缓存
 交换高速缓存由页高速缓存实现的
+
+交换高速缓存的所有页只使用一个swapper_space地址空间，因此只有一个基数
+
+swapper_space.page_tree对交换高速缓存中的页进行寻址
 
 ## 进程间通信
 进程间通信基本机制：
