@@ -31,9 +31,15 @@ categories:
 
 有两个子集URL和URN，URL受路径变化影响，URN不会
 
+### 事务
+
+一个HTTP事务由一条请求命令和一条响应结果组成
+
 ### web结构组件
 
 隧道 连接通道，http信道上发送非http协议资源
+
+用户Agent代理 代表用户发起HTTP请求的客户端程序，所有发布Web请求的应用程序都是HTTP Agent代理，比如Web浏览器
 
 ## 第2章 URL与资源
 
@@ -151,7 +157,7 @@ HTTP2为了解决**队头阻塞**，将TCP报文转换成二进制，并分成�
 
 临时搬离的资源 303 307
 
-URL增强 重写URL，嵌入上下文，是事物间维持状态的方式 303 307
+URL增强 重写URL，嵌入上下文，是事务间维持状态的方式 303 307
 
 负载均衡 303 307
 
@@ -251,6 +257,7 @@ HTTPS/HTTP 客户端安全网关 谨慎使用，确保网关和原始服务器�
 客户端通过HTTP与应用程序服务器通信，服务器将请求通过网关应用编程接口(Application Programming, API)发送给运行在服务器上的应用程序
 
 #### CGI
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/cgi.gif?raw=true)
 
 第一个流行的应用程序网关API是通用网关接口(Common Gateway Interface, CGI)。CGI是一个标准接口集，Web服务器可以用它来装载程序，响应HTTP请求，并收集输出数据，构造HTTP响应会送。
 
@@ -264,9 +271,52 @@ CGI工作原理：每当客户请求CGI的时候，WEB服务器就请求操作�
 
 ## 第11章 客户端识别与cookie机制
 
-### 胖URL
+http最初是一个匿名、无状态的请求/响应协议。服务器处理来自客户端的请求，然后向客户端回送一条响应。web服务器几乎没有什么信息可以用来判定是哪个用户发送的请求，也无法记录来访用户的请求序列。
 
-把用户信息添加到url
+### 解决方案
+
+#### 客户端IP地址
+
+存在以下缺点：
+
+1. IP很可能不是客户端，而是代理
+2. 多个用户公用一个IP
+3. IP地址很容易伪造
+
+#### 用户登陆
+
+服务器返回报文并添加WWW-Authorization首部，客户端下次访问带上Authorization首部，验证用户身份信息
+
+#### 胖URL
+
+把用户信息添加到url，缺点：
+
+1. 暴露用户信息
+2. 破坏缓存
+3. 跳出跳回丢失用户信息
+4. 会话非持久
+
+#### Cookie
+
+是服务器发送到用户浏览器并保存在本地的一小块数据，它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上，使基于无状态的HTTP协议记录稳定的状态信息成为了可能。
+
+Cookie规范看RFC 6265，[中文翻译](https://www.cnblogs.com/jj1106/p/11221239.html)
+
+### Cookie用途
+
+Cookie主要用于以下三个方面：
+
+1. 会话状态管理（如用户登录状态、购物车、游戏分数或其它需要记录的信息）
+2. 个性化设置（如用户自定义设置、主题等）
+3. 浏览器行为跟踪（如跟踪分析用户行为等）
+
+Cookie一度用户存储客户端数据，现在逐渐被Web Storage API和IndexedDB取代
+
+#### Web Storage API
+
+**sessionStorage** 为每一个给定的源（given origin）维持一个独立的存储区域，该存储区域在页面会话期间可用（即只要浏览器处于打开状态，包括页面重新加载和恢复）
+
+**localStorage** 同样的功能，但是在浏览器关闭，然后重新打开后数据仍然存在
 
 ### Cookie分类
 
@@ -276,39 +326,104 @@ cookie两类会话：会话cookie和持久cookie
 
 ### Cookie属性
 
-domain: cookie的域
+Domain: cookie的域
 
-allh: 那些主机可以使用此cookie
+Allh: 那些主机可以使用此cookie
 
-path: 那些路径能使用cookie
+Path: 那些路径能使用cookie
 
-secure: 是否在发送https报文的时候使用cookie
+Secure: 是否在发送https报文的时候使用cookie
 
-expires: 过期时间
+Expires: 过期时间
 
-name: cookie的名字
+Name: cookie的名字
 
-value: cookie的值
+Value: cookie的值
 
-### Cookie设置[break point]
+HttpOnly: 通过js脚本无法读到cookie信息
 
-cookie在性质上是绑定在特定的域名下的。给设定的域名发送请求时，都会包含这个cookie
+### Cookie作用域
 
-当前域名只能设置当前域名以及他的父域名，不能设置子域名
+#### 相关字段
 
-cookie的作用域是domain本身以及domain下的所有子域名。
+Domain和Path标识定义了Cookie的作用域：即Cookie应该发送给哪些URL
+
+Domain 标识指定了哪些主机可以接受Cookie
+
+Path 标识指定了主机下的哪些路径可以接受Cookie
+
+#### Cookie设置
+
+Domain属性只能设置当前域名以及他的父域名，不能设置子域名
+
+浏览器会将domain和path都相同的cookie保存在一个文件里，cookie间用*隔开
+
+#### Cookie访问
+
+Cookie的作用域是Domain本身以及Domain下的所有子域名
+
+子目录页面能访问到父目录Cookie
+
+### 安全[TODO]
 
 ## 第12章 基本认证机制
 
-
-
 ## 第13章 摘要认证
-
-
 
 ## 第14章 安全HTTP
 
+### 加密技术
 
+#### 对称密钥加密技术
+
+编码和解码使用的密钥是同一个
+
+#### 公开密钥加密技术
+
+使用两个非对称密钥Pub和Pri
+
+Pub和Pri
+
+Pub用来对主机报文进行编码，Pri用来给主机报文解码
+
+Pub是公钥，Pri是只有主机才知道的私钥
+
+### 数字签名
+
+除了加解密报文之外，还可以对报文进行签名，说明是谁编写的报文，同时证明报文未被篡改过。这种技术被称为**数字签名**，是附加在报文上的特殊加密校验码
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/digital-signature.png?raw=true)
+
+### 对称加密
+
+使用对称密钥加密技术
+
+问题：密钥如何传输？密钥A的传输需要另一个密钥，循环
+
+### 非对称加密
+	
+存在着签名和验签与加密和解密两个过程：
+
+1. 签名和验签 私钥签名，公钥验签，目的是防篡改
+2. 加密和解密 公钥加密，私钥解密，防止信息被拦截偷听
+
+### 中间人攻击
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/mitm.jpeg?raw=true)
+
+中间人攻击(Man-in-the-MiddleAttack, MITM)，客户端和服务器交换公钥，各自把自己的公钥发给对方，但被中间人劫持了
+
+中间人C用PubC替换PubA，发给服务器，用PubC替换PubB，发给客户端
+
+客户端和服务器之间的消息，使用PubC加密，中间人可以使用PriC解密
+
+### 数字证书
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca.png?raw=true)
+
+### HTTPS
+
+SSL(Secure Socket Layer 安全套接字层)
+
+### 
 
 # 第四部分 实体、编码和国际化
 

@@ -29,6 +29,8 @@ categories:
 
 解耦、异步、削峰
 
+[消息队列面试题](https://www.jianshu.com/p/4491cba335d1)
+
 # Kafka
 
 # NSQ
