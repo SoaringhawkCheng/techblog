@@ -1,5 +1,5 @@
 ---
-title: 「HTTP权威指南」学习笔记[DOING]
+title: 「HTTP权威指南」学习笔记
 catalog: true
 date: 2020-05-31 19:22:48
 subtitle:
@@ -58,43 +58,43 @@ TRACE 对可能经过代理服务器传送到服务器上的报文进行追踪
 OPTIONS 请求服务器告知其支持什么功能
 
 ### 状态码
-
+[HTTP状态码详解与选用](https://segmentfault.com/a/1190000006058316)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/code.png?raw=true)
 #### 2xx 成功状态码
-
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/2xx.png?raw=true)
 #### 3xx 重定向状态码
-
-301 永久重定向
-
-302 临时重定向(HTTP1.0)
-
-303 临时重定向(HTTP1.1)
-
-304 未改变
-
-307 临时重定向(HTTP1.1)
+状态码|原因短语|中文描述|含义|
+---|---|---|---|
+300|Multiple Choices|多中选择|客户端请求一个实际指向多个资源的URL|
+301|Moved Permanently|永久重定向||
+302|Found|临时重定向(HTTP1.0)|临时使用Location首部给出的URL来临时定位资源|
+303|See Other|临时重定向(HTTP1.1)|POST方法的重定向在未询问用户的情况变成GET|
+304|Not Modified|未被修改|响应条件GET请求|
+307|Temporary Redireat|临时重定向(HTTP1.1)|相当于HTTP1.0的302，不会把POST转为GET|
+308|Permanent Redireat|临时重定向(HTTP1.1)||
 
 #### 4xx 客户端错误
+状态码|原因短语|中文描述|含义|
+---|---|---|---|
+400|Bad Request|错误的请求|
+401|Unauthorized|未授权||
+403|Forbidden|拒绝访问|
+404|Not Found|未找到||
+405|Method Not Allowd|方法禁用|
+407|Proxy Authentication Required|需要代理授权|见第十二章|
+408|Request Timeout|超时提醒||
 
 #### 5xx服务端错误
+状态码|原因短语|中文描述|含义|
+---|---|---|---|
+500|Internal Server Error|服务器内部错误|所请求的服务器遇到意外的情况并阻止其执行请求|
+501|Not Implemented|请求未实现|只有GET和HEAD是要求服务器支持的，它们必定不会返回此错误代码|
+502|Bad Gateway|网关错误|表示作为网关或代理角色的服务器，从上游服务器中接收到的响应是无效的|
+503|Service Unavailable|服务器不可用|通常造成这种情况的原因是由于服务器停机维护或者已超载|
+504|Gateway Timeout|网关超时|当服务器作为网关，不能及时得到响应时返回此错误代码|
+505|HTTP Version Not Supported|HTTP版本不支持|服务器不支持请求中所使用的HTTP协议版本|
+
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/5xx.png?raw=true)
-
-500 服务器内部错误 所请求的服务器遇到意外的情况并阻止其执行请求
-
-501 请求未实现 只有GET和HEAD是要求服务器支持的，它们必定不会返回此错误代码
-
-502 网关错误 表示作为网关或代理角色的服务器，从上游服务器中接收到的响应是无效的
-
-503 服务器不可用 通常造成这种情况的原因是由于服务器停机维护或者已超载
-
-504 网关超时 当服务器作为网关，不能及时得到响应时返回此错误代码
-
-505 HTTP版本不支持 服务器不支持请求中所使用的HTTP协议版本
-
-### 首部
-
-Cookie 客户端向服务器传送的cookie
-
-Set-Cookie 服务器传送cookie给客户端
 
 ## 第4章 连接管理
 
@@ -364,11 +364,43 @@ Cookie的作用域是Domain本身以及Domain下的所有子域名
 
 子目录页面能访问到父目录Cookie
 
-### 安全[TODO]
+### Cookie首部
+
+Cookie 客户端向服务器传送的cookie
+
+Set-Cookie 服务器传送cookie给客户端
 
 ## 第12章 基本认证机制
 
+### 认证流程
+
+基本认证描述的就是用户第一次访问服务器的时候，服务器返回401状态码和WWW-Authenticate响应首部，并在首部中描述了密码编码算法和对应要使用密码的安全域
+
+然后客户端弹框，在输入用户名和密码提交后。客户端发送含有Authorization首部的get请求申请验证身份，其中首部中携带了用户名和密码糅合在一起的编码后的验证码给服务器端，
+
+如果验证通过，那么服务器返回200的响应，并以Authentication-Info首部携带相关信息，以后用户就可以不用密码访问相关文件了
+
+### 安全缺陷
+
+明文发送，即使是密文发送，也容易被解码
+
+唯一安全使用方式是与SSL配合使用
+
+### 代理认证
+
+代理认证：就是代替服务器向客户端发起质询/认证，与服务器端发起的质询/认证主要有几点不同：
+
+质询的时候返回的是407状态码，服务器端质询返回的首部是Proxy-Authenticate
+
+客户端认证时发送的是Proxy-Authorizatio首部，认证成功之后返回的是Proxy-Authentication-Info首部。
+
 ## 第13章 摘要认证
+
+### 单向摘要
+
+使用常见的单向摘要函数，比如MD5对密码加密，服务端匹配客户端摘要与服务端摘要
+
+### 随机数防止重放攻击
 
 ## 第14章 安全HTTP
 
@@ -380,9 +412,7 @@ Cookie的作用域是Domain本身以及Domain下的所有子域名
 
 #### 公开密钥加密技术
 
-使用两个非对称密钥Pub和Pri
-
-Pub和Pri
+使用RSA生成两个非对称密钥Pub和Pri
 
 Pub用来对主机报文进行编码，Pri用来给主机报文解码
 
@@ -418,43 +448,128 @@ Pub是公钥，Pri是只有主机才知道的私钥
 ### 数字证书
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/mail.png?raw=true)
+
+公钥的传输过程是不安全的，比如中间人攻击，需要验证收到的公钥是对方发出的，这就需要**数字证书**
+
+#### 服务端证书获取
+
+服务器A将自己的公钥PubA+个人信息发给CA，CA用CA私钥为服务器生成一个数字证书
+
+#### 客户端证书检查
+
+客户端预先信任一些CA机构，并保存好这些CA的公钥
+
+客户端B收到后，用CA的公钥解密数字证书，拿到A的公钥，然后验证数字签名
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca-process.png?raw=true)
+
+#### 根证书与CA信任链
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca-chain.jpg?raw=true)
+
+数字证书使用CA私钥进行加密，同样需要证明CA的公钥不是伪造的
+
+解决方法是给CA颁发证书，将CA的公钥发送给上级的证书中心，颁发证书给当前的CA
+
+这样就形成了一条CA信任链，一直到根证书Root CA
+
+根证书是自验证证书，Root CA机构是公认的第三方权威机构
 
 ### HTTPS
 
-SSL(Secure Socket Layer 安全套接字层)
+HTTPS是应用层协议，默认运行在443端口，是一种安全的传输协议
 
-### 
+通过在HTTP层与运输层的TCP直接加入一个加密/身份验证层来保证安全传输
+
+HTTPS实际上就是HTTP协议和SSL/TSL协议的组合
+
+HTTP是文本协议，HTTPS是二进制协议
+
+### SSL/TLS协议
+安全套接字协议(Secure Sockets Layer, SSL)，及其继任者传输层安全（Transport Layer Security, TLS）是为网络通信提供安全及数据完整性的一种安全协议
+
+TLS与SSL在传输层与应用层之间对网络连接进行加密。
+
+SSL协议位于TCP/IP协议与各种应用层协议之间，为数据通讯提供安全支持
+
+#### SSL/TLS记录协议
+
+建立在可靠的传输协议（如TCP）之上，为高层协议提供数据封装、压缩、加密等基本功能的支持
+
+#### SSL/TLS记录协议
+
+用于在实际的数据传输开始前，通讯双方进行身份认证、协商加密算法、交换加密密钥等。
+
+#### 四次握手[TO RECITE]
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ssl-handshaking-0.png?raw=true)
+
+1. 一次握手：
+
+	步骤 1：客户端通过发送 Client Hello 报文开始 SSL通信。 报文中包含客户端支持的 SSL的指定版本、 加密组件（Cipher Suite） 列表（所使用的加密算法及密钥长度等） 。
+
+2. 二次握手：
+
+	步骤 2：服务器可进行 SSL通信时， 会以 Server Hello 报文作为应答。 和客户端一样， 在报文中包含 SSL版本以及加密组件。 服务器的加密组件内容是从接收到的客户端加密组件内筛选出来的。
+
+	步骤 3：之后服务器发送 Certificate 报文。 报文中包含公开密钥证书。
+
+	步骤 4：最后服务器发送 Server Hello Done 报文通知客户端， 最初阶段的 SSL握手协商部分结束。
+
+3. 三次握手：
+
+	步骤 5：客户端以 Client Key Exchange 报文作为回应。 报文中包含通信加密中使用的一种被称为 Pre-mastersecret 的随机密码串。 该报文已用步骤 3 中的公开密钥进行加密。
+
+	步骤 6：接着客户端继续发送 Change Cipher Spec 报文。 该报文会提示服务器， 在此报文之后的通信会采用Pre-master secret 密钥加密。
+
+	步骤 7：客户端发送 Finished 报文。 该报文包含连接至今全部报文的整体校验值。 这次握手协商是否能够成功， 要以服务器是否能够正确解密该报文作为判定标准。
+
+4. 四次握手：
+
+	步骤 8：服务器同样发送 Change Cipher Spec 报文。
+
+	步骤 9：服务器同样发送 Finished 报文。
+
+	总的来说，SSL会话的建立完成了以下几个工作：
+
+	交换协议版本号，选择一个通信双方都支持的加密方式；对两端实现身份验证；密钥交换。
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ssl-handshaking.png?raw=true)
 
 # 第四部分 实体、编码和国际化
 
 ## 第15章 实体和编码
 
+服务器通过HTTP协议的Content-Type首部中的charset参数和Content-Language首部告知客户端文档的字母表和语言。
 
+### 实体摘要
+
+发送方可以在生成初始的主体时，生成一个数据的校验和。遮掩接收方就可以通过检查这个校验和来捕获所有意外的实体修改了
+
+Content-MD5首部发送对实体主体运行MD5摘要算法的结果
+
+### 媒体类型和字符集
+
+Content-Type 说明的是原始实体主体的MIME类型
+
+参数charset表示字符集，说明把实体中的比特转换为文本文件中的字符方法
 
 ## 第16章 国际化
 
+Content-Language 客户端文档的语言
 
+Accept-Language 客户端能优先接收的语言
 
 ## 第17章 内容协商与转码
-
-
 
 # 第五部分 内容发布与分发
 
 ## 第18章 Web主机托管
 
-
-
 ## 第19章 发布系统
-
-
 
 ## 第20章 重定向与负载均衡
 
-
-
 ## 第21章 日志记录与使用情况跟踪
-
-
 
 # 第六部分 附录
