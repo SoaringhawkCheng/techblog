@@ -1,5 +1,5 @@
 ---
-title: 「从Paxos到Zookeeper」学习笔记[DOING]
+title: 「从Paxos到Zookeeper：分布式一致性原理与实践」学习笔记[DOING]
 catalog: true
 date: 2019-08-27 17:00:38
 subtitle:
@@ -30,6 +30,14 @@ II. -分布式一致性协议相关: 2、3、4.
 
 
 # 第2章 一致性协议
+
+## Paxos算法
+
+### Basic-Paxos
+
+minProposal
+
+### Multi-Paxos
 
 # 第3章 Paxos的工程世界
 

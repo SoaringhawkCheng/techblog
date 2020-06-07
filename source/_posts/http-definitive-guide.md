@@ -354,15 +354,37 @@ Path 标识指定了主机下的哪些路径可以接受Cookie
 
 #### Cookie设置
 
-Domain属性只能设置当前域名以及他的父域名，不能设置子域名
+* 域Domain
 
-浏览器会将domain和path都相同的cookie保存在一个文件里，cookie间用*隔开
+	Domain属性只能设置当前域名以及他的父域名，不能设置子域名，默认值是当前域名
+
+	如果服务器创建Cookie时没有设置路径，那么该Cookie的路径是当前资源的访问路径
+
+* 路径Path
+
+	默认Cookie的路径是当前页面的目录路径
+
+	浏览器会将domain和path都相同的cookie保存在一个文件里，cookie间用*隔开
 
 #### Cookie访问
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/cookie-domain-path.png?raw=true)
 
-Cookie的作用域是Domain本身以及Domain下的所有子域名
+* 路径
 
-子目录页面能访问到父目录Cookie
+	浏览器端保存的Cookie有三个，分别是Cookie1、Cookie2和Cookie3
+
+	它们三个的访问路径分别为：“/Example/cookie“、”/Example/“、”Example1/cookie“
+
+	浏览器访问服务器端的路径为：”http://localhost:8080/Example/cookie/a/index.jsp“
+
+	也就是说index.jsp页面的访问路径为：”/Example/cookie/a/“
+
+	该路径包含了Cookie1和Cookie2的路径，因此在访问index.jsp时，浏览器会将Cookie1和Cookie2
+发送给服务器
+
+* 域
+
+	Cookie的作用域是Domain本身以及Domain下的所有子域名
 
 ### Cookie首部
 
