@@ -17,4 +17,16 @@ categories:
 > 
 > 实际完成时间：
 
- 
+ ## Raft算法
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-log-index.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-replicated-state-machine.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-state-machine-safety.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-state-transfer.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-term.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-two-disjoint-majorities.png?raw=true)
