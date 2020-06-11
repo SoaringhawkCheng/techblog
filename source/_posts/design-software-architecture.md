@@ -17,7 +17,7 @@ categories:
 > 
 > 实际完成时间：
 
- ## Raft算法
+## Raft算法
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-log-index.png?raw=true)
 

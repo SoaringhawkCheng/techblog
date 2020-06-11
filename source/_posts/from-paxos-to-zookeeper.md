@@ -27,13 +27,13 @@ II. -分布式一致性协议相关: 2、3、4.
 
 # 第1章 分布式架构
 
-## 从集中式到分布式
+## 1.1 从集中式到分布式
 
-### 集中式特点
+### 1.1.1 集中式特点
 
 部署结构简单（因为基于底层性能卓越的大型主机，不需考虑对服务多个节点的部署，也就不用考虑多个节点之间分布式协调问题）
 
-### 分布式特点
+### 1.1.2 分布式特点
 
 分布式系统是一个硬件或软件组件分布在不同的网络计算机上，彼此之间仅仅通过消息传递进行通信和协调的系统
 
@@ -45,22 +45,22 @@ II. -分布式一致性协议相关: 2、3、4.
 4. 缺乏全局时钟：很难定义两个事件谁先谁后
 5. 故障总是会发生
  
-### 分布式环境的各种问题
+### 1.1.3 分布式环境的各种问题
 
 1. 通信异常：主要是因为网络本身的不可靠性
 2. 网络分区：当网络发生异常时，导致部分节点之间的网络延时不断增大，最终导致部分节点可以通信，而另一部分节点不能。
 3. 三态（成功、失败与超时）
 4. 节点故障：组成分布式系统的服务器节点出现宕机或“僵死”现象
 
-### 分布式事务
+### 1.1.4 分布式事务
 
 分布式事务是指事务的参与者、支持事务的服务器、资源服务器以及事务管理器分别位于分布式系统的不同节点之上。也可以被定义为一种嵌套型的事务，同时也具有了ACID事务特性。
 
-## 一致性理论
+## 1.2 一致性理论
 
-### ACID
+### 1.2.1 ACID
 
-### CAP
+### 1.2.2 CAP
 
 一个分布式系统不可能同时满足一致性(Consistency)、可用性(Availability)和分区容错性(Parition tolerance)
 
@@ -103,7 +103,7 @@ The system will continue to function when network patitions occur
 
 **AP** 优先保证可用性和分区容错性，放弃一致性。比如数据库的主从复制，Kafka的主从复制就是这种架构。跟CP一样，放弃一致性不是说一致性就不保证了，而是逐渐的变得一致
 
-### BASE
+### 1.2.3 BASE
 
 是Basically Available（基本可用）、Soft state（软状态）和Eventually consistent（最终一致性）三个短语的简写。核心思想是即使无法做到强一致性，但每个应用都可以根据自身的业务特点，采用适当的方式来使系统达到最终一致性
 
@@ -115,13 +115,13 @@ The system will continue to function when network patitions occur
 
 # 第2章 一致性协议
 
-## 2PC和3PC
+## 2.1 2PC和3PC
 
 协调者：用来统一调度所有分布式节点的执行逻辑
 
 参与者：被调度的分布式节点
 
-### 2PC
+### 2.1.1 2PC
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/2pc.png?raw=true)
 
 #### 流程
@@ -174,7 +174,7 @@ The system will continue to function when network patitions occur
 	
 	**太过保守** 一个节点失败导致整个事务失败，没有容错机制
 
-### 3PC
+### 2.1.2 3PC
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/3pc.jpg?raw=true)
 
 #### 流程
@@ -209,14 +209,119 @@ The system will continue to function when network patitions occur
 
 	网络分区，参与者依然会进行事务提交，出现数据不一致性
 
-## Paxos算法
+## 2.2 Paxos算法
 
-多点写入
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-architecture.png?raw=true)
 
-Paxos算法解决的什么问题呢，解决的就是保证每个节点执行相同的操作序列
+**Paxos** 解决的什么问题呢，解决的就是保证每个节点执行相同的操作序列
 
-[Re-visiting of Paxos Made Simple](https://www.jianshu.com/p/67dd80555ba2)
+**BasicPaxos** 是对一个值达成一致
 
+**Multi Paxos** 重复这个过程，确定一系列值，也就是日志的每一条
+
+### 2.2.1 概念与术语
+
+**Instance** Paxos中用来在多个节点之间对同一个值达成一致的过程，比如同一个日志序列号logIndex，不同的logIndex属于不同的Paxos Instance
+
+**Proposer** 提议发起者，处理客户端请求，将客户端的请求发送到集群中，以便决定这个值是否可以被批准
+
+**Acceptor** 提议批准者，负责处理接收到的提议，他们的回复就是一次投票，会存储一些状态来决定是否接收一个值
+
+**Replica** 节点或者副本，分布式系统中的一个server，一般是一台单独的物理机或者虚拟机，同时承担paxos中的提议者和接收者角色
+
+**ProposalId** 每个提议都有一个编号，编号高的提议优先级高
+
+**acceptedProposal** 在一个Paxos Instance内，已经接收过的提议
+
+**acceptedValue** 在一个Paxos Instance内，已经接收过的提议对应的值
+
+**minProposal** 在一个Paxos Instance内，当前接收的最小提议值，会不断更新
+
+**WARO** write all and read one，更新时写所有副本，只有在所有副本中更新才算成功
+
+**Quorum** 当更新操作wi 在N个节点中的W个节点上更新成功，称之为“成功提交的更新操作”
+
+### 2.2.2 Basic Paxos
+
+#### 单点问题
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-single-point.png?raw=true)
+
+Q: 如果acceptor挂掉怎么办？
+
+A: 多个acceptors，选中被大多数acceptors的值
+
+#### 平分提案
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-vote.png?raw=true)
+
+Q: Acceptor只接受第一个到达的值？
+
+A: 如果同时提出提案，不会选中任何值，所以Acceptors必须可以选择多个不同的值
+
+#### 选择冲突
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-conflict-1.png?raw=true)
+
+Q: Acceptor接受所有到达的值？
+
+A: 可能会导致选择多个值，所以一旦一个值被选中，以后的提案必须提出/选择一样的值
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-conflict-2.png?raw=true)
+
+Q: 后提出的提案被现提出的提案覆盖
+
+A: 因此提案必须有序，拒绝旧的提案
+
+#### 提案编号
+
+如何产生唯一的编号呢？在《Paxos made simple》中提到的是让所有的Proposer都从不相交的数据集合中进行选择，例如系统有5个Proposer，则可为每一个Proposer分配一个标识j(0~4)，则每一个proposer每次提出决议的编号可以为5*i+j(i可以用来表示提出议案的次数)
+
+Q: 每个提案的值递增且唯一
+
+A: 时间戳+IP
+
+#### 算法流程
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-basic-paxos.png?raw=true)
+
+* Prepare阶段
+
+	找到已经被选中的值
+
+	阻止旧的提案
+
+* Accept阶段
+
+	请求acceptors接受值
+
+#### 提案覆盖
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-1.png?raw=true)
+
+旧的值被选中，新的proposer发现并使用它
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-2.png?raw=true)
+
+旧的值没有被钻中，但发现被接受了，新的proposer发现并使用它
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-3.png?raw=true)
+
+旧的值没有被选中，也没有被发现接受了，新的proposer使用自己的值
+
+### 2.2.3 Multi-Paxos算法
+
+#### Paxos的问题
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-live-lock.png?raw=true)
+
+**活锁问题** 旧的提案被接受未被选中时，新的提案已被接受，因此旧提案不能被接受，循环往复
+
+**性能问题** 每选中一个值，至少需要两次RTT+两次写盘
+
+**同步问题** 被选中的日志，状态如何同步给其他机器
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-multi-paxos.png?raw=true)
 
 ## ZAB算法
 
