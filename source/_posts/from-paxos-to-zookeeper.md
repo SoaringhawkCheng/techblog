@@ -328,23 +328,64 @@ A: 时间戳+IP
 
 multi-paxos协议中有一个Leader。Leader是系统中唯一的Proposal，在lease租约周期内所有提案都有相同的ProposalId，可以跳过prepare阶段，议案只有accept过程
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-multi-paxos.png?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos.png?raw=true)
 
-#### 活锁问题
+#### Multi-Paxos与Leader
 
-为了减少并发冲突，我们可以变多写为单写，也就是选出一个Leader，只让这个Leader充当Proposer。
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-0.png?raw=true)
 
-#### 性能问题
+但这样效率是比较差的，众所周知朴素Paxos算法的Latency很高
 
-Multi-paxos在选出Leader之后，可以把2PC优化成1PC，也就只需要1个RTT + 1次落盘
+Multi-Paxos算法希望找到多个Instance的Paxos算法之间的联系，从而尝试在某些情况去掉Prepare步骤
+
+首先我们定义Multi-Paxos的参与要素：
+
+1. 3个参与节点 A/B/C.
+2. **Prepare(b)** NodeA节点发起Prepare携带的编号，即**proposalId**
+3. **Promise(b)** NodeA节点承诺的编号，即**minProposal**
+4. **Accept(b)** NodeA节点发起Accept携带的编号，即**acceptedProposal**
+
+下面图中：
+
+1(A)的意思是A节点产生的编号1，2(B)代表编号2由B节点产生。绿色表示Accept通过，红色表示拒绝。
+
+* A/B/C三节点并行提交
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-1.png?raw=true)
+
+这种情况下NodeA节点几乎每个Instance都收到其他节点发来的Prepare，导致Promise编号过大，迫使自己不断提升编号来Prepare。这种情况并未能找到任何的优化突破口
+
+* 只有A节点提交
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-2.png?raw=true)
+
+这种情况我们会立刻发现，在没有其他节点提交的干扰下，每次Prepare的编号都是一样的。于是乎我们想，为何不把Promised(b)变成全局的？来看下图：
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-3.png?raw=true)
+
+假设我们在Instance i进行Prepare(b)，我们要求对这个b进行Promise的生效范围是Instance[i, ∞)，那么在i之后我们就无需在做任何Prepare了。可想而知，假设上图Instance 1之后都没有任何除NodeA之外其他节点的提交，我们就可以预期接下来Node A的Accept都是可以通过的。那么这个去Prepare状态什么时候打破？我们来看有其他节点进行提交的情况：
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-4.png?raw=true)
+
+Instance 4出现了B的提交，使得Promised(b)变成了2(B), 从而导致Node A的Accept被拒绝。而NodeA如何继续提交？必须得提高自己的Prepare编号从而抢占Promised(b)。这里出现了很明显的去Prepare的窗口期Instance[1,3]，而这种期间很明显的标志就是只有一个节点在提交。
+
+* 优化内容
+
+Multi-Paxos通过改变Promised(b)的生效范围至全局的Instance，从而使得一些唯一节点的连续提交获得去Prepare的效果。Leader的作用是希望大部分时间都只有一个节点在提交，这样才能最大发挥Mulit-Paxos的优化效果
+
+* 选主方法
+
+**因为没理解透，所以略**
 
 #### 状态同步
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-select-log-entry.jpg?raw=true)
 
 日志项只需要复制到大多数，我们需要复制到 全部
 
 只有 proposer 知道某个日志项被选中了，我们需要所有服务器都知道哪些日志项被选中了
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-status-sync.jpeg?raw=true)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-status-sync.jpeg?raw=true)
 
 ## ZAB算法
 
