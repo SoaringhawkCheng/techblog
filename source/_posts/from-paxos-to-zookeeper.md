@@ -170,11 +170,12 @@ The system will continue to function when network patitions occur
 	
 	**单点问题** 阶段二commit没有执行，参与者会处在锁定事务资源的状态
 	
-	**脑裂** 阶段二部分commit，会造成数据不一致
+	**脑裂** 分区两侧保持可用的状态称为脑裂，阶段二部分commit，会造成网络分区数据不一致
 	
 	**太过保守** 一个节点失败导致整个事务失败，没有容错机制
 
 ### 2.1.2 3PC
+
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/3pc.jpg?raw=true)
 
 #### 流程
@@ -215,13 +216,11 @@ The system will continue to function when network patitions occur
 
 **Paxos** 解决的什么问题呢，解决的就是保证每个节点执行相同的操作序列
 
-**BasicPaxos** 是对一个值达成一致
+**Instance** 不断重试2PC，直到最终各方达成一致，最终确定一个值，是Paxos执行的过程，也就是一个Paxos Instance
 
 **Multi Paxos** 重复这个过程，确定一系列值，也就是日志的每一条
 
 ### 2.2.1 概念与术语
-
-**Instance** Paxos中用来在多个节点之间对同一个值达成一致的过程，比如同一个日志序列号logIndex，不同的logIndex属于不同的Paxos Instance
 
 **Proposer** 提议发起者，处理客户端请求，将客户端的请求发送到集群中，以便决定这个值是否可以被批准
 
@@ -285,15 +284,17 @@ A: 时间戳+IP
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-basic-paxos.png?raw=true)
 
-* Prepare阶段
+* prepare阶段
 
-	找到已经被选中的值
+	**prepare请求** 
+	
+	**promise响应** 找到已经被选中的值，通过minProposal阻止旧的提案
 
-	阻止旧的提案
+* accept阶段
 
-* Accept阶段
+	**accept请求** 请求acceptors接受值
 
-	请求acceptors接受值
+	**accepted响应**
 
 #### 提案覆盖
 
@@ -309,9 +310,7 @@ A: 时间戳+IP
 
 旧的值没有被选中，也没有被发现接受了，新的proposer使用自己的值
 
-### 2.2.3 Multi-Paxos算法
-
-#### Paxos的问题
+#### 算法缺陷
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-live-lock.png?raw=true)
 
@@ -319,9 +318,33 @@ A: 时间戳+IP
 
 **性能问题** 每选中一个值，至少需要两次RTT+两次写盘
 
-**同步问题** 被选中的日志，状态如何同步给其他机器
+**状态同步** 被选中的日志，状态如何同步给其他机器
+
+### 2.2.3 Multi Paxos[没理解透]
+
+[微信团队PhxPaxos项目的wiki](https://github.com/Tencent/phxpaxos/wiki)
+
+**Multi Paxos** 需要运行多次Paxos Instance，使用logID标识每条log日志以及对应的Paxos Instance，logID全局唯一且自增
+
+multi-paxos协议中有一个Leader。Leader是系统中唯一的Proposal，在lease租约周期内所有提案都有相同的ProposalId，可以跳过prepare阶段，议案只有accept过程
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-multi-paxos.png?raw=true)
+
+#### 活锁问题
+
+为了减少并发冲突，我们可以变多写为单写，也就是选出一个Leader，只让这个Leader充当Proposer。
+
+#### 性能问题
+
+Multi-paxos在选出Leader之后，可以把2PC优化成1PC，也就只需要1个RTT + 1次落盘
+
+#### 状态同步
+
+日志项只需要复制到大多数，我们需要复制到 全部
+
+只有 proposer 知道某个日志项被选中了，我们需要所有服务器都知道哪些日志项被选中了
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-status-sync.jpeg?raw=true)
 
 ## ZAB算法
 
