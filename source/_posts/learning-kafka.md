@@ -25,18 +25,42 @@ categories:
 
 1. 为什么使用消息队列？
 2. 消息队列有什么优点和缺点？
-3. Kafka、ActiveMQ、RabbitMQ、RocketMQ 都有什么区别，以及适合哪些场景？
+3. Kafka、ActiveMQ、RabbitMQ、RocketMQ都有什么区别，以及适合哪些场景？
 
 解耦、异步、削峰
 
 [消息队列面试题](https://www.jianshu.com/p/4491cba335d1)
 
-# Kafka
+# 第1章 初始Kakfa
 
-# NSQ
 
-# RabbitMQ
 
-# RocketMQ
+# 第2章 生产者
 
-# ActiveMQ
+
+
+# 第3章 消费者
+
+每个分区能被一个消费组的一个消费组消费
+
+
+
+# 第4章 主题与分区
+
+
+
+# 第5章 日志存储
+
+
+
+# 第6章 深入服务端
+
+# 第7章 深入客户端
+
+# 第8章 可靠性研究
+
+# 第9章 Kafka应用
+
+# 第10章 Kafka监控
+
+# 第11章 高级应用
