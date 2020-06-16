@@ -17,6 +17,8 @@ categories:
 > 
 > 实际完成时间：
 
+[分布式共识博客](http://blog.kongfy.com/2016/05/%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86consensus%EF%BC%9Aviewstamped%E3%80%81raft%E5%8F%8Apaxos/)
+
 ## Raft算法
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/raft-log-index.png?raw=true)
