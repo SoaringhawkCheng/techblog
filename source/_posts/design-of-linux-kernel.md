@@ -761,16 +761,33 @@ address_space->page_tree域是一个包含所有page的radix树，指定文件�
 页高速缓存中的每个页所包含的数据肯定属于某个文件，这个文件称为页的所有者owner
 
 ### 磁盘IO方式
+
 #### 标准IO
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/io.png?raw=true)
+
+缓存I/O的优点：1）在一定程度上分离了内核空间和用户空间，保护系统本身的运行安全；2）可以减少读盘的次数，从而提高性能
+
+缓存I/O的缺点：在缓存 I/O 机制中，DMA 方式可以将数据直接从磁盘读到页缓存中，或者将数据从页缓存直接写回到磁盘上，而不能直接在应用程序地址空间和磁盘之间进行数据传输。数据在传输过程中需要在应用程序地址空间和缓存之间进行多次数据拷贝操作，这些数据拷贝操作所带来的CPU以及内存开销是非常大的
 
 #### 直接IO
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/directio.png?raw=true)
 
+直接 I/O 访问文件方式减少了一次数据拷贝和一些系统调用的耗时，很大程度降低了 CPU 的使用率以及内存的占用
+
+但是直接与磁盘交互非常耗时，所以只有确定标准I/O开销非常巨大才考虑使用直接I/O
+
+通常直接IO与异步IO结合使用，会得到比较好的性能(异步IO：当访问数据的线程发出请求之后，线程会接着去处理其他事，而不是阻塞等待)
+
 #### 文件映射
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/mmap.png?raw=true)
 
-当你映射一个文件时，它的内容不会立即全部放入内存，而是通过页面错误（Page Fault）按需导入。错误处理程序在获得具有所需文件内容的页帧后 将虚拟页映射到页缓存。
+当你映射一个文件时，它的内容不会立即全部放入内存，而是通过页面错误（Page Fault）按需导入。错误处理程序在获得具有所需文件内容的页帧后 将虚拟页映射到页缓存
+
+减少系统调用。我们只需要一次 mmap() 系统调用，后续所有的调用像操作内存一样，而不会出现大量的 read/write 系统调用
+
+减少数据拷贝。普通的 read() 调用，数据需要经过两次拷贝；而 mmap 只需要从磁盘拷贝一次就可以了，并且由于做过内存映射，也不需要再拷贝回用户空间
+
+可靠性高。mmap 把数据写入页缓存后，跟缓存 I/O 的延迟写机制一样，可以依靠内核线程定期写回磁盘。但是需要提的是，mmap 在内核崩溃、突然断电的情况下也一样有可能引起内容丢失，当然我们也可以使用 msync来强制同步写
 
 ### address_space对象
 页缓存的核心数据结构是address_space对象

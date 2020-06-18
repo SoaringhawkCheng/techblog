@@ -25,6 +25,10 @@ I. -ZooKeeper相关: 1、5、6、7章(建议中间穿插第8章阅读).
 
 II. -分布式一致性协议相关: 2、3、4. 
 
+## 问题：zookeeper如何保证半数提交后剩下的节点上最新的数据
+
+分情况。只有在脑裂且系统配置readonlymode.enabled才会读取旧数据。事实上当Leader发送给Follower数据失败时，会关闭Leader和Follower的sync连接，此时触发Follower异常，会关闭当前所有的客户端连接并将服务器状态更改为LOOKING，重新寻找Leader，如果找到和常规操作一样。寻找过程中如果系统配置readonlymode.enabled才会读取旧数据。
+
 # 第1章 分布式架构
 
 ## 1.1 从集中式到分布式
@@ -418,7 +422,7 @@ Multi-Paxos通过改变Promised(b)的生效范围至全局的Instance，从而�
 
 ### 4.1.1 支持特性
 
-**顺序一致性** 同一客户端发起的事务请求，会严格地按照其发起的顺序应用到ZooKeeper
+**顺序一致性** 同一客户端发起的事务请求，会严格地按照其发起的顺序应用到ZooKeeper[博文:共识、线性一致和顺序一致](https://www.jianshu.com/p/59ea658a1313)
 
 **原子性** 要么所有节点都成功执行了事务，要么全都没有执行
 

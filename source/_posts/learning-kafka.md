@@ -41,15 +41,19 @@ categories:
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/partition.png?raw=true)
 
-topic包含多个分区，partition包含的消息不同，**kafka引入分区解决机器IO性能瓶颈**
+**kafka引入partition解决机器IO性能瓶颈**，topic包含多个partition
 
-分区是kafka的最小并行操作单元，单个partition数据写入可以并行化，partition消费只能被一个consumer线程消费
+partition包含的消息不同，offset是消息在分区中标识，kafka保证消息分区有序
+
+partition是kafka的最小并行操作单元，单个partition数据写入可以并行化，partition消费只能被一个consumer线程消费
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/broker.png?raw=true)
 
 **kafka为分区引入多副本机制，提升容灾能力**
 
 一个topic可以横跨多个broker，每个broker包含全部partition副本
+
+partition的每个副本必须分布在不同的broker上，才能实现有效冗余
 
 producer和consumer只和leader副本进行交互，follower只负责同步，消息相对滞后
 
@@ -71,14 +75,59 @@ Kafka使用ISR有效权衡了数据可靠性和性能，既不是完全同步复
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/producer-architecture.png?raw=true)
 
+### 发送模式
+
+**发后即忘(fire-and-forget)** 只管往kafka发送而不关心消息是否正确到达，不对发送结果进行判断处理
+
+**同步(sync)** KafkaProducer.send()返回的是一个Future对象，使用Future.get()来阻塞获取任务发送的结果，来对发送结果进行相应的处理
+
+**异步(async)** 向send()返回的Future对象注册一个Callback回调函数，来实现异步的发送确认逻辑
+	
+### 分区器
+
+使用key计算消息的分区号
+	
+### acks参数
+
+acks=1 leader副本成功写入就会收到服务端响应
+	
+acks=0 producer不需要服务端响应
+	
+acks=-1 or all ISR所有副本写入才能收到响应
+
 ## 第3章 消费者
 
+### 消息消费
 
-每个分区能被一个消费组的一个消费组消费
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/consumer-group.jpg?raw=true)
+
+一个消费组能订阅topic上所有分区，每个分区只能被一个消费组的一个consumer消费
+
+消息的消费一般是两种模式：推和拉，kafka消息消费是一个不断轮询poll的过程
+
+### 位移提交
+
+消费者位移存储在kafka内部主题__consumer_offsets中
+
+消息位移的提交方式是自动提交，消费者每隔5s将拉取到的分区消息位移进行提交
+
+自动提交会带来重复消费和消息丢失的问题，改为手动提交可以避免
+
+### 多线程实现
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/consumer.png?raw=true)
+
+KafkaProducer是线程安全的，但KafkaConsumer是非线程安全的
+
+每个线程消费一个partition需要建立大量的TCP连接，推荐使用一个线程消费，多线程处理
 
 ## 第4章 主题与分区
 
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/log.png?raw=true)
 
+分区数 * 副本因子 = 总文件数
+
+broker数 * 
 
 ## 第5章 日志存储
 
@@ -95,3 +144,4 @@ Kafka使用ISR有效权衡了数据可靠性和性能，既不是完全同步复
 ## 第10章 Kafka监控
 
 ## 第11章 高级应用
+
