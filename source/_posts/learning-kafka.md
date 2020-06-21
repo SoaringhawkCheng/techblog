@@ -30,6 +30,7 @@ categories:
 解耦、异步、削峰
 
 [消息队列面试题](https://www.jianshu.com/p/4491cba335d1)
+[kafka面试问](https://zhuanlan.zhihu.com/p/147054382)
 
 ## 第1章 初始Kakfa
 
@@ -127,9 +128,21 @@ KafkaProducer是线程安全的，但KafkaConsumer是非线程安全的
 
 ## 第5章 日志存储
 
-### 磁盘存储
+### 文件目录布局
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/io.png?raw=true)
+
+不考虑多副本的情况，一个分区对应一个日志Log，Log被切分为多个LogSegment
+
+Log在物理上只以文件夹的形式存储，LogSegment对应于磁盘上的一个日志文件和两个索引文件
+
+### 消息压缩
+
+
+
+### 磁盘存储
+
+
 
 Kafka大量使用了页缓存，这是实现高吞吐的重要因素之一
 
