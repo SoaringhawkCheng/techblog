@@ -1,5 +1,5 @@
 ---
-title: 「深入理解nginx」学习笔记[DOING]
+title: 「深入理解nginx」学习笔记
 catalog: true
 date: 2019-10-17 17:34:29
 subtitle:
@@ -16,5 +16,4 @@ categories:
 > 预计完成时间：
 > 
 > 实际完成时间：
-> 
-> 
+
