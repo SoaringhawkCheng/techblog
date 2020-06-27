@@ -70,7 +70,7 @@ producer和consumer只和leader副本进行交互，follower只负责同步，�
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/offset-2.png?raw=true)
 
-Kafka使用ISR有效权衡了数据可靠性和性能，既不是完全同步复制，也不是淡出异步复制
+Kafka使用ISR有效权衡了数据可靠性和性能，既不是完全同步复制，也不是完全异步复制
 
 ## 第2章 生产者
 
@@ -168,6 +168,14 @@ Kafka使用mmap进行文件读写，大量使用了页缓存，这是实现高�
 
 #### 消息传输保障
 
+一般消息中间件的消息传输保障有3个层级：
+
+1. at most once：至多一次。消息可能丢失，但不会重复
+2. at least once：至少一次。消息不会丢失，但可能重复
+3. exactly once：恰好一次。每条消息肯定且仅传输一次
+
+kafka提供的消息传输保障为at least once
+
 #### 幂等
 
 Kafka的幂等只能保证单个生产者会话（session）中单分区的幂等
@@ -201,10 +209,72 @@ kafka的事务可以使应用程序将消费消息，生产消息，提交消费
 5. leader副本所在服务器将拉取结果返回follower副本
 6. follower副本收到结果，将消息追加到本地日志，并更新日志的偏移量信息
 
-LEO和HW更新过程
+LEO和HW更新过程：
 
-follower向leader拉取消息时，带有自己的LEO信息（fetch_offset），leader更新HW（取HW和LEO中的最小值），返回follower相应消息，并带有自身的HW
+1. follower向leader拉取消息时，带有自己的LEO信息(fetch_offset)
+2. leader更新HW(取leader的HW和follower的LEO中的最小值)，保存副本LEO，返回follower相应消息，并带有自身的HW
+3. follower收到新消息后，更新LEO和HW
 
+在一个分区中，leader副本所在的节点会记录所有副本的LEO(用于计算主HW)
+
+而follower副本所在的节点只会记录自身的LEO，而不会记录其他副本的LEO
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/leo-hw-update.png?raw=true)
+
+如上图，从LEO和HW的更新过程可以看到，follower更新完消息1，下一轮fetch才能把HW更新为1
+
+leader和follower的HW更新不是同步的，且滞后于follower消息写入，会造成数据丢失和不一致问题
+
+#### 数据丢失问题
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/data-loss-1.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/data-loss-2.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/data-loss-3.png?raw=true)
+
+follower副本恢复后会做两件事情：
+
+1. 使用HW截断自身
+2. 向leader发送fetch请求
+
+#### 数据不一致问题
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/hw-data-inconsistent-1.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/hw-data-inconsistent-2.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/hw-data-inconsistent-3.png?raw=true)
+
+### 使用epoch
+
+ack=-1只能解决日志写入同步，epoch解决了HW不同步带来的问题
+
+#### 解决数据丢失
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-loss-1.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-loss-2.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-loss-3.png?raw=true)
+
+#### 解决数据不一致
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-inconsistent-1.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-inconsistent-2.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/learning-kafka/epoch-data-inconsistent-3.png?raw=true)
+
+### 可靠性分析
+
+ack=-1，保证所有副本日志写入成功后再返回，即使leader宕机，消息也不会丢失
+
+设置min.insync.replicas参数，指定了ISR集合中的最小副本数，不满足条件就会抛出错误
+
+将auto commit设置为false，执行手动位移提交，宁可重复消费也不应该因为消费异常导致消息丢失
+
+死信队列，将一直不能成功被消费的消息暂存到死信队列
 
 ## 第9章 Kafka应用
 
