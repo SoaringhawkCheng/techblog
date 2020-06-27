@@ -182,6 +182,30 @@ kafka的事务可以使应用程序将消费消息，生产消息，提交消费
 
 ## 第8章 可靠性研究
 
+### 副本剖析
+
+#### 失效副本
+
+同步失效或功能失效的副本成为失效副本，失效副本对应的分区成为同步失效分区（under-replicated）
+
+同步失效判定：根据broker参数 replica.lag.time.max.ms 作为标准，当ISR中的follower副本滞后leader副本时间超过此时间则判定同步失败
+
+#### LEO和HW
+
+多副本消息追加过程：
+
+1. 生产者客户端发送消息至leader副本
+2. 消息追加到leader副本的本地日志，并更新日志偏移量
+3. follower副本向leader副本请求同步数据
+4. leader副本所在的服务器读取本地日志，并更新对应拉取的follower副本信息
+5. leader副本所在服务器将拉取结果返回follower副本
+6. follower副本收到结果，将消息追加到本地日志，并更新日志的偏移量信息
+
+LEO和HW更新过程
+
+follower向leader拉取消息时，带有自己的LEO信息（fetch_offset），leader更新HW（取HW和LEO中的最小值），返回follower相应消息，并带有自身的HW
+
+
 ## 第9章 Kafka应用
 
 ## 第10章 Kafka监控
