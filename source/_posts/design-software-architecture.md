@@ -28,11 +28,23 @@ categories:
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-copy-0.png?raw=true)
 
-上下文切换是CPU密集型的工作，数据拷贝是I/O密集型的工作。如果一次简单的传输就要像上面这样复杂的话，效率是相当低下的。零拷贝机制的终极目标，就是消除冗余的上下文切换和数据拷贝，提高效率。
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-copy-context-0.png?raw=true)
+
+上下文切换是CPU密集型的工作，数据拷贝是I/O密集型的工作。如果一次简单的传输就要像上面这样复杂的话，效率是相当低下的。零拷贝机制的终极目标，就是消除冗余的上下文切换和数据拷贝，提高效率
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-context-1.png?raw=true)
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-copy-1.png?raw=true)
 
+可见，不仅拷贝的次数变成了3次，上下文切换的次数也减少到了2次，效率比传统方式高了很多。但是它还并非完美状态，下面看一看让它变得更优化的方法
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-context-2.png?raw=true)
+
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/zero-copy-2.png?raw=true)
+
+在“基础”零拷贝方式的时序图中，有一个“write data to target socket buffer”的回环，在框图中也有一个从“Read buffer”到“Socket buffer”的大箭头。这是因为在一般的Block DMA方式中，源物理地址和目标物理地址都得是连续的，所以一次只能传输物理上连续的一块数据，每传输一个块发起一次中断，直到传输完成，所以必须要在两个缓冲区之间拷贝数据。
+
+而Scatter/Gather DMA方式则不同，会预先维护一个物理上不连续的块描述符的链表，描述符中包含有数据的起始地址和长度。传输时只需要遍历链表，按序传输数据，全部完成后发起一次中断即可，效率比Block DMA要高。也就是说，硬件可以通过Scatter/Gather DMA直接从内核缓冲区中取得全部数据，不需要再从内核缓冲区向Socket缓冲区拷贝数据。
 
 ## 高并发
 

@@ -28,3 +28,5 @@ consumer通过nsqlookupd查找topic所在的nsqd实例地址
 nsqadmin提供一个web ui管理topic，channel，consumer的层次结构
 
 nsq保证消息至少传送一次
+
+收到的消息是无序的
