@@ -29,4 +29,4 @@ nsqadmin提供一个web ui管理topic，channel，consumer的层次结构
 
 nsq保证消息至少传送一次
 
-收到的消息是无序的
+收到的消息是无序的，支持requeue

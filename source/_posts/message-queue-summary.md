@@ -1,5 +1,5 @@
 ---
-title: message-queue-summary
+title: 消息队列总结
 catalog: true
 date: 2020-06-28 19:57:28
 subtitle:

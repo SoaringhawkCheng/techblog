@@ -21,17 +21,6 @@ categories:
 > 
 > 实际完成时间：
 
-## 灵魂三问
-
-1. 为什么使用消息队列？
-2. 消息队列有什么优点和缺点？
-3. Kafka、ActiveMQ、RabbitMQ、RocketMQ都有什么区别，以及适合哪些场景？
-
-解耦、异步、削峰
-
-[消息队列面试题](https://www.jianshu.com/p/4491cba335d1)
-[kafka面试问](https://zhuanlan.zhihu.com/p/147054382)
-
 ## 第1章 初始Kakfa
 
 ### Kafka体系结构
@@ -188,6 +177,8 @@ broker在内存中为每一对<PID, partition>维护一个序列号，进行对�
 
 kafka的事务可以使应用程序将消费消息，生产消息，提交消费位移当做原子操作来处理，同时成功或失败，即使该生产或消费会跨多个分区
 
+transactionId与PID一一对应，但是transactionId是由用户显式设置，而PID是kafka内部分配。如果使用同一个transactionId开启两个producer，则前一个producer会报错并不再工作
+
 ## 第8章 可靠性研究
 
 ### 副本剖析
@@ -281,6 +272,10 @@ ack=-1，保证所有副本日志写入成功后再返回，即使leader宕机�
 ## 第10章 Kafka监控
 
 ## 第11章 高级应用
+
+**Kafka不支持重试机制也就不支持消息重试，也不支持死信队列**
+
+**原生kafka并没有提供延时队列、消息轨迹等功能**
 
 ### 过期时间
 
