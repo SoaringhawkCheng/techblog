@@ -1,7 +1,7 @@
 ---
 title: 「高性能MYSQL」学习笔记[DOING]
 catalog: true
-date: 2019-04-05 14:38:09
+date: 2019-07-05 14:38:09
 subtitle: 
 tags:
 - database
@@ -10,9 +10,9 @@ categories:
 ---
 > 书籍豆瓣链接：[《高性能MySQL》](https://book.douban.com/subject/23008813/)
 > 
-> 开始学习时间：4-5
+> 开始学习时间：
 > 
-> 预计完成时间：5-4
+> 预计完成时间：
 > 
 > 实际完成时间：
 
