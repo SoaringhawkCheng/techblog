@@ -161,7 +161,30 @@ task struct成员：
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-linux-kernel/process-state.png?raw=true)
 
 #### 进程家族树
-所有进程都是PID=1的init进程的后代
+
+Linux下有三个特殊的进程idle进程（PID=0），init进程（PID=1），和kthreadd（PID=2）
+
+* idle进程由系统自动创建，运行在内核态
+	
+	idle进程其pid=0，其前身是系统创建的第一个进程，也是唯一一个没有通过fork或者kernel_thread产生的进程。完成加载系统后，演变为进程调度、交换。
+	
+	这个进程只干一件事情：向CPU发送HLT（halt）指令，告诉CPU现在没有需要它处理的程序，CPU可以进入空闲状态
+	
+	这个进程的优先级是整个系统中最低的，只要还有其它进程需要使用CPU，它就会暂停下来停止执行，等其它进程使用完CPU，操作系统就会切换回这个System Idle进程，继续向CPU发送HLT指令
+	
+	对于多个CPU，单个CPU多个核心或者多CPU多核心的系统，System Idle会有N个线程，其中N为整个系统的总核心数。
+	
+* kthreadd进程由idle通过kernel_thread创建，并始终运行在内核空间，负责所有内核进程的调度和管理。
+
+	它的任务就是管理和调度其他内核线程kernel_thread, 会循环执行一个kthread的函数，该函数的作用就是运行kthread_create_list全局链表中维护的kthread, 当我们调用kernel_thread创建的内核线程会被加入到此链表中，因此所有的内核线程都是直接或者间接的以kthreadd为父进程
+	
+* init进程由idle通过kernel_thread创建，在内核空间完成初始化后，加载init程序
+
+	在这里我们就主要讲解下init进程，init进程由0进程创建，完成系统的初始化，是系统中所有其他用户进程的祖先进程
+	
+	Linux中的所有进程都是由init进程创建并运行的。首先Linux内核启动，然后在用户空间中启动init进程，再启动其他系统进程。在系统启动完成后，init将变成为守护进程监视系统其他进程。
+	
+	所以说init进程是Linux系统操作中不可缺少的程序之一，如果内核找不到init进程就会试着运行/bin/sh，如果运行失败，系统的启动也会失败。
 
 ### 进程创建
 分为两步：fork和exec
