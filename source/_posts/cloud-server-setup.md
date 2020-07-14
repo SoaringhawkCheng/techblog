@@ -1,11 +1,13 @@
 ---
-title: cloud-server-setup
+title: 阿里云服务器搭建笔记
 catalog: true
 date: 2020-07-02 00:43:53
 subtitle:
 header-img:
 tags:
+- devops
 categories:
+- 工程
 ---
 
 创建用户
