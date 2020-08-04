@@ -106,6 +106,12 @@ categories:
 
 * 读比写有延迟，保证最终一致性
 
+## 如何保证分布式系统中接口调用的顺序性？
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/call-in-sequence-1.png?raw=true)
+
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/call-in-sequence-2.jpeg?raw=true)
+
 ## Raft算法
 
 ![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-software-architecture/raft-log-index.png?raw=true)

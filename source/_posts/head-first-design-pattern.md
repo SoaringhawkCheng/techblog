@@ -34,10 +34,6 @@ categories:
 * 抽象
 
 		定义一个类的时候，实际上就是把一类事物的公有的属性和行为提取出来，形成一个物理模型
-		
-* UML图图示
-
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/1.jpg?raw=true)
 
 * 抽象类和接口
 
@@ -66,6 +62,45 @@ categories:
 		接口可以被多重实现，抽象类只能被单一继承
 		抽象类实现接口，可以把接口中方法映射到抽象类中作为抽象方法，而不是实现
 		
+		
+# UML类图
+
+* 泛化关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_generalize.jpg?raw=true)
+
+	继承非抽象类
+
+* 实现关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_realize.jpg?raw=true)
+
+	继承抽象类
+
+* 聚合关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_aggregation.jpg?raw=true)
+	
+	整体和部分弱依赖，部分生命周期不依赖整体，比如指针成员变量
+
+* 组合关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_composition.jpg?raw=true)
+	
+	整体和部分强依赖，部分生命周期依赖整体，如普通成员变量
+
+* 关联关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_association.jpg?raw=true)
+	
+	
+
+* 依赖关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_dependency.jpg?raw=true)
+	
+	类构造方法及类方法的传入参数
+
 # 设计原则
 
 * 将应用中可能变化之处，把他们独立出来
