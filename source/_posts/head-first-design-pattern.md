@@ -67,39 +67,38 @@ categories:
 
 * 泛化关系
 
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_generalize.jpg?raw=true)
-
-	继承非抽象类
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_generalize.png?raw=true)
+	
+	继承类和接口，java中通过extends实现
 
 * 实现关系
 
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_realize.jpg?raw=true)
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_realization.png?raw=true)
 
-	继承抽象类
+	实现接口，java中使用implements表示
+
+* 依赖关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_dependency.png?raw=true)	
+	java中表现为，局部变量、方法中的参数和静态方法调用
+
+* 关联关系
+
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_association.png?raw=true)
+
+	java中使用成员变量实现
 
 * 聚合关系
 
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_aggregation.jpg?raw=true)
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_aggregation.png?raw=true)
 	
 	整体和部分弱依赖，部分生命周期不依赖整体，比如指针成员变量
 
 * 组合关系
 
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_composition.jpg?raw=true)
+	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_composition.png?raw=true)
 	
 	整体和部分强依赖，部分生命周期依赖整体，如普通成员变量
-
-* 关联关系
-
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_association.jpg?raw=true)
-	
-	
-
-* 依赖关系
-
-	![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/uml_dependency.jpg?raw=true)
-	
-	类构造方法及类方法的传入参数
 
 # 设计原则
 
