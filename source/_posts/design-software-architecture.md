@@ -1,5 +1,5 @@
 ---
-title: 「软件架构设计」学习笔记[DOING]
+title: 「软件架构设计：大型网站技术架构与业务架构融合之道」学习笔记[DOING]
 catalog: true
 date: 2020-05-24 21:06:15
 subtitle:
@@ -9,7 +9,7 @@ tags:
 categories:
 - 工程
 ---
-> 书籍豆瓣链接：[《软件架构设计》](https://book.douban.com/subject/30443578/)
+> 书籍豆瓣链接：[《软件架构设计：大型网站技术架构与业务架构融合之道》](https://book.douban.com/subject/30443578/)
 > 
 > 开始学习时间：
 > 

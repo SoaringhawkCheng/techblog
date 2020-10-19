@@ -1,8 +1,8 @@
 ---
-title: 「超大流量分布式系统架构解决方案」学习笔记
+title: 「超大流量分布式系统架构解决方案」学习笔记[TODO]
 catalog: true
 date: 2020-10-09 13:52:09
-subtitle: 人人都是架构师2.0
+subtitle:
 header-img:
 tags:
 - architecture
