@@ -1,7 +1,7 @@
 ---
 title: 「深入理解Java虚拟机」学习笔记[DOING]
 catalog: true
-date: 2020-05-24 23:53:35
+date: 2020-11-24 23:53:35
 subtitle:
 header-img:
 tags:
@@ -18,4 +18,4 @@ categories:
 > 实际完成时间：
 
 
-![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/understand-jvm/mind.png)
+![](https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/understand-jvm/mind2.png?raw=true)
