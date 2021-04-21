@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          「高性能MYSQL」学习笔记[DOING] - 沙罗双树园 | 追寻梦之碎片
+        
+    </title>
+
+    <link rel="canonical" href="https://blog.soaringhawkcheng.tech/工程/high-performance-mysql/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/vintage/article.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#database" title="database">database</a>
+                            
+                        </div>
+                        <h1>「高性能MYSQL」学习笔记[DOING]</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by 追寻梦之碎片 on
+                            2019-07-05
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">沙罗双树园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>书籍豆瓣链接：<a target="_blank" rel="noopener" href="https://book.douban.com/subject/23008813/">《高性能MySQL》</a></p>
+<p>开始学习时间：</p>
+<p>预计完成时间：</p>
+<p>实际完成时间：</p>
+</blockquote>
+<h1><span id="mysql架构">MySQL架构</span></h1>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/1.png?raw=true" alt="MySQL三层架构"></p>
+<h2><span id="架构">架构</span></h2>
+<h3><span id="服务层">服务层</span></h3>
+<p>负责链接管理(客户端与服务器<code>半双工</code>)、授权认证、安全。维护一个连接池，使用用户名和密码或SSL进行认证。</p>
+<h3><span id="查询优化">查询优化</span></h3>
+<p>负责解析查询（编译SQL），并进行优化。对于SELECT语句，先查询缓存。存储过程、触发器、视图都在这一层。</p>
+<h3><span id="存储层">存储层</span></h3>
+<p>负责存储数据、提取数据、开启一个事务等等。存储引擎通过api与上层进行通信，api屏蔽了不同存储引擎之间的差异。</p>
+<h3><span id="隔离性">隔离性</span></h3>
+<p>针对隔离性遇到的问题如下：</p>
+<ol>
+<li>
+<p>脏读：读到了别的事务回滚前的脏数据</p>
+</li>
+<li>
+<p>不可重复读：事务A前后两次读取数据不一致(事务B改变了数据，update和delete)</p>
+</li>
+<li>
+<p>幻读：事务A首先根据索引得到N条数据，再次搜索发现有N+M条数据了(事务B进行了insert</p>
+</li>
+<li>
+<p>丢失更新：同时更新数据，一方数据被覆盖</p>
+</li>
+</ol>
+<h2><span id="隔离级别">隔离级别</span></h2>
+<ol>
+<li>read uncommitted(未提交读)</li>
+</ol>
+<p>解决了丢失更新问题</p>
+<ol start="2">
+<li>read committed(提交读)</li>
+</ol>
+<p>解决了脏读的问题</p>
+<ol start="3">
+<li>repeatable read(可重复读)</li>
+</ol>
+<p>解决了不可重复读问题，解决了幻读问题</p>
+<ol start="4">
+<li>serializable(序列化)</li>
+</ol>
+<p>解决丢失更新问题</p>
+<h2><span id="乐观锁和悲观锁">乐观锁和悲观锁</span></h2>
+<h3><span id="乐观锁">乐观锁</span></h3>
+<p>获取数据不加锁</p>
+<p>更新数据判断数据是否被修改，如果修改不更新</p>
+<p>适合于多读的机制，可以提高吞吐量</p>
+<p>一般使用：version方式和CAS方式</p>
+<h3><span id="version方式">version方式</span></h3>
+<p>提交版本必须大于记录当前版本才能执行更新，</p>
+<h3><span id="cas方式">CAS方式</span></h3>
+<p>compare and swap或者compare and set，是一种有名无锁算法，不使用锁的情况下（线程不会被阻塞）实现多线程之间的变量同步。</p>
+<p>涉及到三个操作数：内存值、预期值和新值</p>
+<ul>
+<li>需要读写的内存值 V</li>
+<li>进行比较的值 A</li>
+<li>你写入的新值 B</li>
+</ul>
+<p>CAS有3个操作数，内存值V，旧的预期值A，要修改的新值B。当且仅当预期值A和内存值V相同时，将内存值V修改为B，否则什么都不做。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int compare_and_swap (int* reg, int oldval, int newval) </span><br><span class="line">&#123;</span><br><span class="line">  ATOMIC(); </span><br><span class="line">  int old_reg_val &#x3D; *reg;</span><br><span class="line">  if (old_reg_val &#x3D;&#x3D; oldval) </span><br><span class="line">     *reg &#x3D; newval;</span><br><span class="line">  END_ATOMIC();</span><br><span class="line">  return old_reg_val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="悲观锁">悲观锁</span></h2>
+<p>每次获取数据都加锁</p>
+<p>依赖数据库的锁机制，无法保证外部系统不会修改数据</p>
+<h1><span id="存储引擎">存储引擎</span></h1>
+<h2><span id="innodb">InnoDB</span></h2>
+<p>MVCC支持高并发，默认可重复读，通过间隙锁策略防止幻读</p>
+<h2><span id="myisam">MyISAM</span></h2>
+<p>MyISAM会将表存储在两个文件：数据文件和索引文件，不支持事务和行级锁</p>
+<p>崩溃后无法安全回复，对于只读，容忍修复操作，小表可以用MYISAM</p>
+<p>索引特性，即使是BLOB和TEXT等长字段，也可以基于前500字符创建索引，支持全文索引</p>
+<p>myisam的数据分布，myisam的数据根据插入的顺序存储在磁盘上，行号从0开始递增</p>
+<p>myisam的索引的叶子节点存的是行指针</p>
+<h1><span id="schema与数据类型优化">Schema与数据类型优化</span></h1>
+<h2><span id="数据类型">数据类型</span></h2>
+<h3><span id="整数类型">整数类型</span></h3>
+<p>整数存储，分为TINYINT,SMALLINT,MEDIUMINT,INT,BIGINT，分别使用8,16,24,32,64位存储空间</p>
+<p>整数计算使用64位的BIGINT</p>
+<h3><span id="实数类型">实数类型</span></h3>
+<p>FLOAT 4字节</p>
+<p>DOUBLE 8字节，使用DOUBLE作为浮点计算类型</p>
+<p>DECIMAL(M,N) 精确计算代价高，转为浮点不精确，宜转成BIGINT</p>
+<h3><span id="字符串类型">字符串类型</span></h3>
+<p>VARCHAR 可变长字符串，比定长节省空间，额外存字符串长度</p>
+<p>CHAR 定长字符串</p>
+<p>BLOB 二进制存储 二进制数据</p>
+<p>TEXT 字符存储 有字符集和排序规则</p>
+<p>BLOB和TEXT不能索引全部长度字符串，应该避免</p>
+<ul>
+<li>ENUM</li>
+</ul>
+<p>优点 代替常用字符串，MYSQL会保存一个映射表，每个值的位置-字符串</p>
+<p>缺点 字符串列表固定，添加或删除字符串必须使用ALTER TABLE</p>
+<h3><span id="日期和时间类型">日期和时间类型</span></h3>
+<ul>
+<li>DATETIME</li>
+</ul>
+<p>8字节，与时区无关，保存大范围值</p>
+<ul>
+<li>TIMESTAMP</li>
+</ul>
+<p>保存1970.1.1(格林尼治标准时间)以来的秒数，4字节，与时区有关</p>
+<h3><span id="位数据类型">位数据类型</span></h3>
+<p>BIT MYSQL把bit当字符串，b’00111001’存0x57</p>
+<p>SET 需要ALTER TABLE</p>
+<h3><span id="选择标识符">选择标识符</span></h3>
+<p>整数性能好，可以使用AURO INCREMENT</p>
+<p>不宜使用ENUM SET</p>
+<p>不宜使用字符串，占空间，随机字符串造成页分裂</p>
+<h3><span id="类型选择策略">类型选择策略</span></h3>
+<ol>
+<li>
+<p>尽量选择可以正确存储数据的最小数据类型</p>
+</li>
+<li>
+<p>使用操作简单的数据类型。字符串有字符集和校对规则，操作代价比整型大。使用MYSQL内建类型，而不是字符串存储日期和时间，使用整型存储IP地址</p>
+</li>
+<li>
+<p>尽量避免NULL，给默认值</p>
+</li>
+</ol>
+<h3><span id="schema设计陷阱">schema设计陷阱</span></h3>
+<p>很宽的表，只使用一小部分列，性能差</p>
+<p>避免太多的关联</p>
+<p>ENUM添加枚举需要ALTER TABLE，不如新建一个枚举表</p>
+<h2><span id="范式和反范式">范式和反范式</span></h2>
+<h3><span id="数据库三范式">数据库三范式</span></h3>
+<ul>
+<li>第一范式 字段原子不可分</li>
+</ul>
+<p>数据库的每一列都是不可分割的原子数据项，不能是数组或JSON串</p>
+<ul>
+<li>第二范式 有主键，非主键完全依赖主键</li>
+</ul>
+<p>主键是关注人ID+被关注人ID，关注人信息部分依赖主键</p>
+<ul>
+<li>第三范式 非主键直接依赖主键，不存在传递依赖</li>
+</ul>
+<p>员工表有个字段是部门ID，部门信息不直接依赖员工ID，不应该存在于员工表</p>
+<h3><span id="范式优缺点">范式优缺点</span></h3>
+<p>优点 表更小，没有重复冗余数据，更新更快</p>
+<p>缺点 需要关联</p>
+<h3><span id="反范式优缺点">反范式优缺点</span></h3>
+<p>优点 数据在一张表里，很好地避免关联，更好地使用索引</p>
+<h2><span id="缓存和汇总表">缓存和汇总表</span></h2>
+<h1><span id="高性能的索引策略">高性能的索引策略</span></h1>
+<h2><span id="索引基础">索引基础</span></h2>
+<h3><span id="b树索引">b树索引</span></h3>
+<ul>
+<li>数据结构</li>
+</ul>
+<ol>
+<li>
+<p>B树</p>
+<p>树中每个节点最多包含m个孩子，根节点至少有2个子节点，非根非叶节点至少有m/2个子节点</p>
+<p>有n个关键字的父节点，拥有n+1个子节点，每个节点的关键字记录数据在磁盘中的位置</p>
+</li>
+<li>
+<p>B+树</p>
+<p>叶子节点包含了全部的关键字信息，所有的数据仅存在叶子节点</p>
+</li>
+<li>
+<p>为什么B+树更适合做文件或者数据库索引</p>
+<p>B+树非叶子节点不存数据的地址信息，B+树叶子节点有链表结构，方便范围查询</p>
+</li>
+<li>
+<p>B*树</p>
+<p>非叶子节点加链表，非叶子节点关键字个数至少2/3M</p>
+</li>
+</ol>
+<ul>
+<li>支持的查询</li>
+</ul>
+<p>创建一个包含多列的索引，支持以下查询</p>
+<ol>
+<li>全值匹配，和索引中所有列匹配</li>
+<li>匹配索引第一列</li>
+<li>匹配索引第一列的前缀</li>
+<li>匹配索引第一列的范围</li>
+<li>匹配索引第一列，匹配索引第二列的范围</li>
+<li>只访问索引列的查询(索引覆盖)</li>
+</ol>
+<ul>
+<li>索引的限制</li>
+</ul>
+<ol>
+<li>必须从最左列开始查找</li>
+<li>不能跳过索引的列</li>
+<li>某一列范围查询，右边所有列都无法使用索引查找</li>
+</ol>
+<ul>
+<li>优点</li>
+</ul>
+<ol>
+<li>减少了服务器需要扫描的数据量</li>
+<li>帮助服务器避免排序和临时表</li>
+<li>随机io变顺序io</li>
+</ol>
+<h3><span id="哈希索引">哈希索引</span></h3>
+<p>计算所有列的哈希值，为key，指针为为v</p>
+<p>特性</p>
+<ol>
+<li>innodb内置自适应哈希索引，给频繁使用的b树索引加一个哈希索引</li>
+<li>不支持部分列查询，无法用于排序</li>
+<li>只包含哈希值和行指针，不存储字段值，无可避免的要读取行</li>
+</ol>
+<h3><span id="空间数据索引">空间数据索引</span></h3>
+<p>TODO</p>
+<h3><span id="全文索引">全文索引</span></h3>
+<p>TODO</p>
+<h2><span id="索引优化">索引优化</span></h2>
+<h3><span id="单列索引">单列索引</span></h3>
+<p><strong>索引的选择性</strong> 不重复的索引值和数据表记录总数的比值，比值越高查询效率越高</p>
+<p>计算 SELECT COUNT(DISTINCT column)/COUNT (*) FROM</p>
+<p><strong>前缀索引</strong> 很长字符串列建立索引索引，索引大且慢，在保证索引选择性的情况下，使用字符串前缀作为索引</p>
+<h3><span id="多列索引">多列索引</span></h3>
+<ul>
+<li>索引合并策略</li>
+</ul>
+<p>对多个索引做相交操作(AND)，需要一个包含所有相关列的多列索引</p>
+<p>对多个索引做联合操作(OR)，需要耗费大量的CPU和内存资源在算法的缓存，排序和合并操作上，可能还不如全表扫描</p>
+<ul>
+<li>选择合适的索引列顺序</li>
+</ul>
+<p>选择性最高的列放在最前列效率最好</p>
+<h3><span id="聚簇索引">聚簇索引</span></h3>
+<p>当表有聚簇索引，数据行实际上存放在叶子页</p>
+<ul>
+<li>优点</li>
+</ul>
+<p>可以键值相邻的数据保存在一起</p>
+<p>数据访问更快</p>
+<p>覆盖索引扫描的查询可以直接使用主键值</p>
+<ul>
+<li>缺点</li>
+</ul>
+<p>更新聚簇索引列的代价很高，强制innodb将每个被更新的行移动到新的位置，插入造成页分裂</p>
+<ul>
+<li>按主键顺序插入行</li>
+</ul>
+<p>最简单的方法是使用auto increment自增列</p>
+<p>使用UUID作为聚簇索引，索引插入完全随机，写入是乱序的，不得不频繁做页分裂操作</p>
+<h3><span id="覆盖索引">覆盖索引</span></h3>
+<p>索引包含所有需要查询的字段值，称为覆盖索引</p>
+<ul>
+<li>优点</li>
+</ul>
+<p>索引条目远小于数据行大小</p>
+<p>索引按列值顺序存储的，支持范围查询，比访问磁盘的io少得多</p>
+<p>二级索引叶子节点保存主键值，如二级索引能覆盖查询，避免主键索引的二次查询</p>
+<ul>
+<li>延迟关联</li>
+</ul>
+<p>如索引无法覆盖，可使用二级索引查出id集，然后使用聚簇索引获取数据</p>
+<h3><span id="索引排序">索引排序</span></h3>
+<ol>
+<li>
+<p>只有索引的列顺序和ORDER BY子句的顺序完全一致，并且所有列的排序方向一致或相反</p>
+</li>
+<li>
+<p>关联多张表，ORDER BY子句字段都是第一张表</p>
+</li>
+<li>
+<p>ORDER BY子句满足最左前缀</p>
+</li>
+<li>
+<p>WHERE子句使用常量过滤，和ORDER BY子句一起，满足最左前缀</p>
+</li>
+</ol>
+<h3><span id="冗余和重复索引">冗余和重复索引</span></h3>
+<ul>
+<li>
+<p>重复索引 创建多个相同列，索引类型相同的索引</p>
+</li>
+<li>
+<p>冗余索引 有了index(a,b)，再创建index(a)，或者包含主键的耳机索引</p>
+</li>
+<li>
+<p>需要冗余索引场景</p>
+</li>
+</ul>
+<p>为保证单查a的效率，已有index(a,b,c)，仍新建index(a)</p>
+<h3><span id="索引与锁">索引与锁</span></h3>
+<p>Innodb只有访问行的时候才会加锁，而索引能减少innodb访问的行数</p>
+<p>在主键索引上使用排他锁，在二级索引上使用共享锁</p>
+<h2><span id="explain">Explain</span></h2>
+<h3><span id="type-访问类型">type 访问类型</span></h3>
+<p>all 全表扫描</p>
+<p>index 另外一种形式的全表扫描，扫描顺序按照索引的顺序，然后根据索引回表查数据</p>
+<p>ref 查找列使用索引而且不为主键和unique</p>
+<p>req_eq 查找结果唯一</p>
+<p>const 将主键放到where后面作为条件查询，将查询转化为常量</p>
+<h3><span id="extra">extra</span></h3>
+<p>using filesort 无法利用索引完成排序操作</p>
+<p>using index 表示使用覆盖索引，不用回表</p>
+<p>using where 表示优化器需要通过索引回表查询数据</p>
+<h2><span id="索引案例">索引案例</span></h2>
+<h3><span id="支持多种过滤条件">支持多种过滤条件</span></h3>
+<p>选择性低，但是几乎所有查询都能用到的索引，比如sex，用作索引前缀</p>
+<p>如果没用到sex，可以加上sex in [‘male’, ‘female’]，匹配最左前缀，复用索引而不是建立大量的组合索引</p>
+<p>由于索引遇到范围查询，后续字段无法使用索引，可以使用IN代替范围查询</p>
+<p>但是IN查询优化器会转化成组合，应避免嵌套IN</p>
+<h3><span id="优化排序">优化排序</span></h3>
+<ul>
+<li>索引排序</li>
+</ul>
+<p>文件排序对于小数据集很快，对于选择性低的列，使用索引做排序</p>
+<ul>
+<li>深度分页</li>
+</ul>
+<p>一个策略是延迟关联，使用覆盖索引返回需要的主键，根据主键关联原表获取行</p>
+<h1><span id="查询性能优化">查询性能优化</span></h1>
+<ul>
+<li>查询性能优化方向</li>
+</ul>
+<ol>
+<li>好的库表结构设计</li>
+<li>好的索引优化策略</li>
+<li>好的查询语句</li>
+</ol>
+<h2><span id="排查思路">排查思路</span></h2>
+<h3><span id="是否向数据库请求了不需要的数据">是否向数据库请求了不需要的数据</span></h3>
+<ul>
+<li>查询不需要的记录</li>
+</ul>
+<p>查询后面加上LIMIT</p>
+<ul>
+<li>多表关联时返回全部列</li>
+</ul>
+<p>修改为select tb.*返回某个表全部列</p>
+<ul>
+<li>总是取出全部列，无法完成索引覆盖</li>
+</ul>
+<p>不使用select *</p>
+<ul>
+<li>重复查询相同的数据</li>
+</ul>
+<p>使用缓存</p>
+<h3><span id="mysql是否扫描了额外的记录">MYSQL是否扫描了额外的记录</span></h3>
+<ul>
+<li>响应时间</li>
+</ul>
+<p>响应时间 = 服务时间 + 排队时间</p>
+<p>服务时间 数据库处理查询的时间</p>
+<p>排队时间 等待io等待锁的时间</p>
+<ul>
+<li>扫描的行数</li>
+</ul>
+<p>使用explain type返回where条件的三个等级</p>
+<ol>
+<li>
+<p>type=ref extra=，主键索引中使用where过滤不匹配记录，存储引擎完成</p>
+</li>
+<li>
+<p>type=ref extra=using index，使用覆盖索引扫描和过滤，服务器层完成</p>
+</li>
+<li>
+<p>type=all extra=using where，数据表返回数据，服务器层完成</p>
+</li>
+</ol>
+<ul>
+<li>返回的行数</li>
+</ul>
+<h2><span id="重构查询">重构查询</span></h2>
+<h3><span id="切分查询">切分查询</span></h3>
+<p>MYSQL扫描内存中数据快，响应数据给客户端慢，将一条大的语句一次性完成，可能会造成</p>
+<ol>
+<li>
+<p>一次锁住很多数据</p>
+</li>
+<li>
+<p>占满整个事务日志</p>
+</li>
+<li>
+<p>耗尽系统资源</p>
+</li>
+<li>
+<p>阻塞很多小但重要的查询</p>
+</li>
+</ol>
+<h3><span id="分解关联查询">分解关联查询</span></h3>
+<p>在应用程序进行关联，每一个表进行一次单表查询，优势</p>
+<ol>
+<li>
+<p>让缓存效率更高，应用方便缓存单表查询结果</p>
+</li>
+<li>
+<p>单个查询减少锁的竞争</p>
+</li>
+<li>
+<p>应用层做关联，更容易对数据库进行拆分，高性能和扩展</p>
+</li>
+<li>
+<p>使用单表查询获得的ids进行IN查另一个表，比随机关联查询性能更高</p>
+</li>
+<li>
+<p>减少冗余记录的查询</p>
+</li>
+<li>
+<p>相当于用应用层的哈希关联，替代mysql的嵌套循环关联</p>
+</li>
+</ol>
+<h2><span id="查询执行的基础">查询执行的基础</span></h2>
+<h3><span id="查询执行流程">查询执行流程</span></h3>
+<ol>
+<li>
+<p>客户端发送一条查询给服务器</p>
+</li>
+<li>
+<p>先检查<strong>查询缓存</strong>，未命中进入下一步</p>
+</li>
+<li>
+<p>服务器端进行SQL解析(<strong>解析器</strong>)，预处理器(<strong>预处理器</strong>)，<strong>查询优化器</strong>生成对应执行计划</p>
+</li>
+<li>
+<p><strong>查询执行引擎</strong>调用<strong>存储引擎</strong>API执行计划</p>
+</li>
+<li>
+<p>结果返回客户端</p>
+</li>
+</ol>
+<h3><span id="查询优化处理">查询优化处理</span></h3>
+<ul>
+<li>等价变换简化规范表达式</li>
+</ul>
+<p>如where子句顺序</p>
+<ul>
+<li>MIN,MAX,COUNT</li>
+</ul>
+<p>转化为常量</p>
+<ul>
+<li>等值传播</li>
+</ul>
+<p>等值关联的字段，WHERE条件会传递到另一个列上，无需写两个</p>
+<ul>
+<li>列表IN</li>
+</ul>
+<p>先排序列表，在二分搜索，IN是logn，OR是n**？？为何是logn，不是都是nlogn**</p>
+<ul>
+<li>执行关联查询</li>
+</ul>
+<p>执行嵌套循环关联操作(全外连接无法通过嵌套循环和回溯的方式完成，MYSQL没有全外连接)</p>
+<h2><span id="优化特定类型查询">优化特定类型查询</span></h2>
+<ul>
+<li>COUNT()</li>
+</ul>
+<ol>
+<li>COUNT(*) 不会扩展所有的列，直接忽略所有的列统计行数</li>
+</ol>
+<p>MYISAM是表级锁，不会有并发操作，将表的总行数记录下来</p>
+<p>INNODB选择最小的非聚簇索引来扫表，前提是没有where和groupby</p>
+<ol start="2">
+<li>
+<p>COUNT(col) 统计某个列值数量，要求列值非NULL</p>
+</li>
+<li>
+<p>COUNT(1)和COUNT(*)没有区别</p>
+</li>
+</ol>
+<ul>
+<li>优化关联查询</li>
+</ul>
+<p>确保ON或USING子句中的列上有索引</p>
+<p>确保groupby orderby只涉及一个表中的列</p>
+<ul>
+<li>优化LIMIT分页</li>
+</ul>
+<ol>
+<li>使用索引覆盖扫描，而不是查询所有列</li>
+</ol>
+<p>不能解决深度分页</p>
+<ol start="2">
+<li>
+<p>使用延迟关联</p>
+</li>
+<li>
+<p>查询转换为已知位置查询，offset转换为&lt;&gt;</p>
+</li>
+</ol>
+<ul>
+<li>优化UNION查询</li>
+</ul>
+<p>通过创建并填充临时表的方式来执行UNION</p>
+<p>UNION会给临时表加DISTINCT选项，导致整个临时表做唯一性检查</p>
+<p>除非需要去重，否则一定要使用UNION ALL</p>
+<h1><span id="脑图">脑图</span></h1>
+<p><a target="_blank" rel="noopener" href="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/high-performance-mysql/4.png?raw=true">链接</a></p>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/工程/nsq-doc-notes/" data-toggle="tooltip" data-placement="top" title="「NSQ文档」学习笔记[DOING]">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/工程/innodb-storage-engine/" data-toggle="tooltip" data-placement="top" title="「MySQL技术内幕·InnoDB存储引擎」学习笔记[DOING]">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">MySQL架构</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">架构</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.1.1.</span> <span class="toc-nav-text">服务层</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.1.2.</span> <span class="toc-nav-text">查询优化</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.1.3.</span> <span class="toc-nav-text">存储层</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.1.4.</span> <span class="toc-nav-text">隔离性</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">隔离级别</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">乐观锁和悲观锁</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.3.1.</span> <span class="toc-nav-text">乐观锁</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.3.2.</span> <span class="toc-nav-text">version方式</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.3.3.</span> <span class="toc-nav-text">CAS方式</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.4.</span> <span class="toc-nav-text">悲观锁</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">存储引擎</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">InnoDB</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">MyISAM</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">Schema与数据类型优化</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">数据类型</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.1.</span> <span class="toc-nav-text">整数类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.2.</span> <span class="toc-nav-text">实数类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.3.</span> <span class="toc-nav-text">字符串类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.4.</span> <span class="toc-nav-text">日期和时间类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.5.</span> <span class="toc-nav-text">位数据类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.6.</span> <span class="toc-nav-text">选择标识符</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.7.</span> <span class="toc-nav-text">类型选择策略</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.8.</span> <span class="toc-nav-text">schema设计陷阱</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">范式和反范式</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.1.</span> <span class="toc-nav-text">数据库三范式</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.</span> <span class="toc-nav-text">范式优缺点</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.</span> <span class="toc-nav-text">反范式优缺点</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">缓存和汇总表</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">高性能的索引策略</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">索引基础</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.</span> <span class="toc-nav-text">b树索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.2.</span> <span class="toc-nav-text">哈希索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.3.</span> <span class="toc-nav-text">空间数据索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.4.</span> <span class="toc-nav-text">全文索引</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.2.</span> <span class="toc-nav-text">索引优化</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.1.</span> <span class="toc-nav-text">单列索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.2.</span> <span class="toc-nav-text">多列索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.3.</span> <span class="toc-nav-text">聚簇索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.4.</span> <span class="toc-nav-text">覆盖索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.5.</span> <span class="toc-nav-text">索引排序</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.6.</span> <span class="toc-nav-text">冗余和重复索引</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.7.</span> <span class="toc-nav-text">索引与锁</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.3.</span> <span class="toc-nav-text">Explain</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.3.1.</span> <span class="toc-nav-text">type 访问类型</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.3.2.</span> <span class="toc-nav-text">extra</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.4.</span> <span class="toc-nav-text">索引案例</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.1.</span> <span class="toc-nav-text">支持多种过滤条件</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.2.</span> <span class="toc-nav-text">优化排序</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">5.</span> <span class="toc-nav-text">查询性能优化</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.1.</span> <span class="toc-nav-text">排查思路</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.1.</span> <span class="toc-nav-text">是否向数据库请求了不需要的数据</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.2.</span> <span class="toc-nav-text">MYSQL是否扫描了额外的记录</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.2.</span> <span class="toc-nav-text">重构查询</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.1.</span> <span class="toc-nav-text">切分查询</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.2.</span> <span class="toc-nav-text">分解关联查询</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.3.</span> <span class="toc-nav-text">查询执行的基础</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.3.1.</span> <span class="toc-nav-text">查询执行流程</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.3.2.</span> <span class="toc-nav-text">查询优化处理</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.4.</span> <span class="toc-nav-text">优化特定类型查询</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">6.</span> <span class="toc-nav-text">脑图</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#database" title="database">database</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 
+                    2021 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    追寻梦之碎片 
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://blog.soaringhawkcheng.tech/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://blog.soaringhawkcheng.tech/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

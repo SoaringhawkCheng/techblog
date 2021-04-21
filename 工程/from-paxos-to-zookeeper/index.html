@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          「从Paxos到Zookeeper：分布式一致性原理与实践」学习笔记 - 沙罗双树园 | 追寻梦之碎片
+        
+    </title>
+
+    <link rel="canonical" href="https://blog.soaringhawkcheng.tech/工程/from-paxos-to-zookeeper/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/vintage/article.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#gateway" title="gateway">gateway</a>
+                            
+                        </div>
+                        <h1>「从Paxos到Zookeeper：分布式一致性原理与实践」学习笔记</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by 追寻梦之碎片 on
+                            2019-09-28
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">沙罗双树园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>书籍豆瓣链接：<a target="_blank" rel="noopener" href="https://book.douban.com/subject/26292004/">《从Paxos到Zookeeper》</a></p>
+<p>开始学习时间：</p>
+<p>预计完成时间：</p>
+<p>实际完成时间：</p>
+</blockquote>
+<h1><span id="前言">前言</span></h1>
+<h2><span id="建议阅读顺序">建议阅读顺序</span></h2>
+<p>I. -ZooKeeper相关: 1、5、6、7章(建议中间穿插第8章阅读).</p>
+<p>II. -分布式一致性协议相关: 2、3、4.</p>
+<h2><span id="问题zookeeper如何保证半数提交后剩下的节点上最新的数据">问题：zookeeper如何保证半数提交后剩下的节点上最新的数据</span></h2>
+<p>分情况。只有在脑裂且系统配置readonlymode.enabled才会读取旧数据。事实上当Leader发送给Follower数据失败时，会关闭Leader和Follower的sync连接，此时触发Follower异常，会关闭当前所有的客户端连接并将服务器状态更改为LOOKING，重新寻找Leader，如果找到和常规操作一样。寻找过程中如果系统配置readonlymode.enabled才会读取旧数据。</p>
+<h1><span id="第1章-分布式架构">第1章 分布式架构</span></h1>
+<h2><span id="11-从集中式到分布式">1.1 从集中式到分布式</span></h2>
+<h3><span id="111-集中式特点">1.1.1 集中式特点</span></h3>
+<p>部署结构简单（因为基于底层性能卓越的大型主机，不需考虑对服务多个节点的部署，也就不用考虑多个节点之间分布式协调问题）</p>
+<h3><span id="112-分布式特点">1.1.2 分布式特点</span></h3>
+<p>分布式系统是一个硬件或软件组件分布在不同的网络计算机上，彼此之间仅仅通过消息传递进行通信和协调的系统</p>
+<p>分布式的特点：</p>
+<ol>
+<li>分布性：在空间随意分布</li>
+<li>对等性：没有主从之分，都是对等的</li>
+<li>并发性</li>
+<li>缺乏全局时钟：很难定义两个事件谁先谁后</li>
+<li>故障总是会发生</li>
+</ol>
+<h3><span id="113-分布式环境的各种问题">1.1.3 分布式环境的各种问题</span></h3>
+<ol>
+<li>通信异常：主要是因为网络本身的不可靠性</li>
+<li>网络分区：当网络发生异常时，导致部分节点之间的网络延时不断增大，最终导致部分节点可以通信，而另一部分节点不能。</li>
+<li>三态（成功、失败与超时）</li>
+<li>节点故障：组成分布式系统的服务器节点出现宕机或“僵死”现象</li>
+</ol>
+<h3><span id="114-分布式事务">1.1.4 分布式事务</span></h3>
+<p>分布式事务是指事务的参与者、支持事务的服务器、资源服务器以及事务管理器分别位于分布式系统的不同节点之上。也可以被定义为一种嵌套型的事务，同时也具有了ACID事务特性。</p>
+<h2><span id="12-一致性理论">1.2 一致性理论</span></h2>
+<h3><span id="121-acid">1.2.1 ACID</span></h3>
+<h3><span id="122-cap">1.2.2 CAP</span></h3>
+<p>一个分布式系统不可能同时满足一致性(Consistency)、可用性(Availability)和分区容错性(Parition tolerance)</p>
+<h4><span id="一致性">一致性</span></h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A read is guaranteed to return the most recent write for a given client</span><br><span class="line">对某个指定客户端，读操作保证能够返回最新的写操作结果</span><br></pre></td></tr></table></figure>
+<p>数据在多个副本之间是否能够保持一致的特性。</p>
+<h4><span id="可用性">可用性</span></h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">A non-failing node will return a reasonable response within a reasonable amount of time (no error or timeout)</span><br><span class="line">非故障的节点在合理的时间内返回合理的响应(不是错误和超时的响应)</span><br></pre></td></tr></table></figure>
+<p>系统提供的服务必须一致处于可用的状态，对于用户的每一个操作请求总是能够在有限的时间内返回结果。</p>
+<h4><span id="分区容错性">分区容错性</span></h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">The system will continue to function when network patitions occur</span><br><span class="line">当发生网络分区后，系统能够继续“履行职责”</span><br></pre></td></tr></table></figure>
+<p>分布式系统在遇到任何网络分区故障的时候，仍然需要能够保证对外提供服务，除非是整个网络环境都发生了故障。</p>
+<h4><span id="cap的矛盾">CAP的矛盾</span></h4>
+<p>一个分布式系统不可能同时满足一致性、可用性和分区容错性这三个需求</p>
+<p>对于一个分布式系统，P是一个最基本的需求，只能在C和A之间权衡</p>
+<p><strong>CA</strong> 优先保证一致性和可用性，放弃分区容错。这也意味着放弃系统的扩展性，系统不再是分布式的，有违设计的初衷。</p>
+<p><strong>CP</strong> 优先保证一致性和分区容错性，放弃可用性。在数据一致性要求比较高的场合(譬如:zookeeper,Hbase)是比较常见的做法，一旦发生网络故障或者消息丢失，就会牺牲用户体验，等恢复之后用户才逐渐能访问。</p>
+<p><strong>AP</strong> 优先保证可用性和分区容错性，放弃一致性。比如数据库的主从复制，Kafka的主从复制就是这种架构。跟CP一样，放弃一致性不是说一致性就不保证了，而是逐渐的变得一致</p>
+<h3><span id="123-base">1.2.3 BASE</span></h3>
+<p>是Basically Available（基本可用）、Soft state（软状态）和Eventually consistent（最终一致性）三个短语的简写。核心思想是即使无法做到强一致性，但每个应用都可以根据自身的业务特点，采用适当的方式来使系统达到最终一致性</p>
+<p><strong>基本可用</strong> 分布式系统在出现不可预知故障的时候，允许损失部分可用性。</p>
+<p><strong>弱状态</strong> 也称软状态，允许系统在不同节点的数据副本之间进行数据同步存在延时。</p>
+<p><strong>最终一致性</strong> 系统中所有的数据副本，在经过一段时间的同步后，最终能够达到一个一致的状态。</p>
+<h1><span id="第2章-一致性协议">第2章 一致性协议</span></h1>
+<h2><span id="21-2pc和3pc">2.1 2PC和3PC</span></h2>
+<p>协调者：用来统一调度所有分布式节点的执行逻辑</p>
+<p>参与者：被调度的分布式节点</p>
+<h3><span id="211-2pc">2.1.1 2PC</span></h3>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/2pc.png?raw=true" alt></p>
+<h4><span id="流程">流程</span></h4>
+<ul>
+<li>
+<p>阶段一：提交事务请求（投票阶段）</p>
+<p>协调者节点发送事务内容，询问是否可以执行事务提交操作</p>
+<p>参与者节点执行询问发起为止的所有事务操作，并将Undo信息和Redo信息写入日志</p>
+<p>各参与者节点响应协调者节点发起的询问。YES or NO</p>
+</li>
+<li>
+<p>阶段二A：执行事务提交（执行阶段）</p>
+<p>所有询问响应都为“YES”，执行事物提交：</p>
+<p>协调者向参与者发送commit请求</p>
+<p>参与者节点接受到COMMIT请求后正式完成操作，并释放在整个事务期间内占用的资源</p>
+<p>参与者节点向协调者节点发送&quot;ACK”消息</p>
+<p>协调者节点收到所有参与者节点反馈的&quot;ACK”消息后，完成事务</p>
+</li>
+<li>
+<p>阶段二B：中断事务（执行阶段）</p>
+<p>如果任一参与者节点在第一阶段返回的响应消息为“NO”，或者协调者节点在第一阶段的询问超时之前无法获取所有参与者节点的响应消息时,那么就会中断事务：</p>
+<p>协调者向参与者发送Rollback请求</p>
+<p>参与者节点利用之前写入的Undo信息执行回滚，并释放在整个事务期间内占用的资源</p>
+<p>参与者节点向协调者节点发送&quot;ACK”消息</p>
+<p>协调者节点收到所有参与者节点反馈的&quot;ACK”消息后，中断事务</p>
+</li>
+</ul>
+<h4><span id="分析">分析</span></h4>
+<ul>
+<li>
+<p>优点</p>
+<p>原理简单，实现方便</p>
+</li>
+<li>
+<p>缺点</p>
+<p><strong>同步阻塞问题</strong> 事务阻塞型，锁定事务资源</p>
+<p><strong>单点问题</strong> 阶段二commit没有执行，参与者会处在锁定事务资源的状态</p>
+<p><strong>脑裂</strong> 分区两侧保持可用的状态称为脑裂，阶段二部分commit，会造成网络分区数据不一致</p>
+<p><strong>太过保守</strong> 一个节点失败导致整个事务失败，没有容错机制</p>
+</li>
+</ul>
+<h3><span id="212-3pc">2.1.2 3PC</span></h3>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/3pc.jpg?raw=true" alt></p>
+<h4><span id="流程">流程</span></h4>
+<ul>
+<li>
+<p>阶段一：CanCommit阶段</p>
+<p>协调者向参与者发送CanCommit请求</p>
+<p>参与者响应CanCommit请求 YES or NO？</p>
+</li>
+<li>
+<p>阶段二A：PreCommit阶段 preCommit请求</p>
+</li>
+</ul>
+<p>发送预提交请求协调者向参与者发送PreCommit请求，并进入Prepared阶段</p>
+<ul>
+<li>
+<p>阶段二B：PreCommit阶段 abort请求</p>
+</li>
+<li>
+<p>阶段三A：doCommit阶段 doCommit请求</p>
+</li>
+<li>
+<p>阶段三B：doCommit阶段 abort请求</p>
+</li>
+<li>
+<p>故障情况</p>
+<p>参与者没有收到来自协调者的doCommit或abort请求，会在等待超时后，继续进行事务提交</p>
+</li>
+</ul>
+<h4><span id="分析">分析</span></h4>
+<ul>
+<li>
+<p>优点</p>
+<p>降低了参与者的阻塞范围，出单单点故障后继续打成一致</p>
+</li>
+<li>
+<p>缺点</p>
+<p>网络分区，参与者依然会进行事务提交，出现数据不一致性</p>
+</li>
+</ul>
+<h2><span id="22-paxos算法">2.2 Paxos算法</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-architecture.png?raw=true" alt></p>
+<p><strong>Paxos</strong> 解决的什么问题呢，解决的就是保证每个节点执行相同的操作序列</p>
+<p><strong>Instance</strong> 不断重试2PC，直到最终各方达成一致，最终确定一个值，是Paxos执行的过程，也就是一个Paxos Instance</p>
+<p><strong>Multi Paxos</strong> 重复这个过程，确定一系列值，也就是日志的每一条</p>
+<h3><span id="221-概念与术语">2.2.1 概念与术语</span></h3>
+<p><strong>Proposer</strong> 提议发起者，处理客户端请求，将客户端的请求发送到集群中，以便决定这个值是否可以被批准</p>
+<p><strong>Acceptor</strong> 提议批准者，负责处理接收到的提议，他们的回复就是一次投票，会存储一些状态来决定是否接收一个值</p>
+<p><strong>Replica</strong> 节点或者副本，分布式系统中的一个server，一般是一台单独的物理机或者虚拟机，同时承担paxos中的提议者和接收者角色</p>
+<p><strong>ProposalId</strong> 每个提议都有一个编号，编号高的提议优先级高</p>
+<p><strong>acceptedProposal</strong> 在一个Paxos Instance内，已经接收过的提议</p>
+<p><strong>acceptedValue</strong> 在一个Paxos Instance内，已经接收过的提议对应的值</p>
+<p><strong>minProposal</strong> 在一个Paxos Instance内，当前接收的最小提议值，会不断更新</p>
+<p><strong>WARO</strong> write all and read one，更新时写所有副本，只有在所有副本中更新才算成功</p>
+<p><strong>Quorum</strong> 当更新操作wi 在N个节点中的W个节点上更新成功，称之为“成功提交的更新操作”</p>
+<h3><span id="222-basic-paxos">2.2.2 Basic Paxos</span></h3>
+<h4><span id="单点问题">单点问题</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-single-point.png?raw=true" alt></p>
+<p>Q: 如果acceptor挂掉怎么办？</p>
+<p>A: 多个acceptors，选中被大多数acceptors的值</p>
+<h4><span id="平分提案">平分提案</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-vote.png?raw=true" alt></p>
+<p>Q: Acceptor只接受第一个到达的值？</p>
+<p>A: 如果同时提出提案，不会选中任何值，所以Acceptors必须可以选择多个不同的值</p>
+<h4><span id="选择冲突">选择冲突</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-conflict-1.png?raw=true" alt></p>
+<p>Q: Acceptor接受所有到达的值？</p>
+<p>A: 可能会导致选择多个值，所以一旦一个值被选中，以后的提案必须提出/选择一样的值</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-conflict-2.png?raw=true" alt></p>
+<p>Q: 后提出的提案被现提出的提案覆盖</p>
+<p>A: 因此提案必须有序，拒绝旧的提案</p>
+<h4><span id="提案编号">提案编号</span></h4>
+<p>如何产生唯一的编号呢？在《Paxos made simple》中提到的是让所有的Proposer都从不相交的数据集合中进行选择，例如系统有5个Proposer，则可为每一个Proposer分配一个标识j(0~4)，则每一个proposer每次提出决议的编号可以为5*i+j(i可以用来表示提出议案的次数)</p>
+<p>Q: 每个提案的值递增且唯一</p>
+<p>A: 时间戳+IP</p>
+<h4><span id="算法流程">算法流程</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-basic-paxos.png?raw=true" alt></p>
+<ul>
+<li>
+<p>prepare阶段</p>
+<p><strong>prepare请求</strong></p>
+<p><strong>promise响应</strong> 找到已经被选中的值，通过minProposal阻止旧的提案</p>
+</li>
+<li>
+<p>accept阶段</p>
+<p><strong>accept请求</strong> 请求acceptors接受值</p>
+<p><strong>accepted响应</strong></p>
+</li>
+</ul>
+<h4><span id="提案覆盖">提案覆盖</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-1.png?raw=true" alt></p>
+<p>旧的值被选中，新的proposer发现并使用它</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-2.png?raw=true" alt></p>
+<p>旧的值没有被钻中，但发现被接受了，新的proposer发现并使用它</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-accept-value-3.png?raw=true" alt></p>
+<p>旧的值没有被选中，也没有被发现接受了，新的proposer使用自己的值</p>
+<h4><span id="算法缺陷">算法缺陷</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/paxos-live-lock.png?raw=true" alt></p>
+<p><strong>活锁问题</strong> 旧的提案被接受未被选中时，新的提案已被接受，因此旧提案不能被接受，循环往复</p>
+<p><strong>性能问题</strong> 每选中一个值，至少需要两次RTT+两次写盘</p>
+<p><strong>状态同步</strong> 被选中的日志，状态如何同步给其他机器</p>
+<h3><span id="223-multi-paxos">2.2.3 Multi Paxos</span></h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/Tencent/phxpaxos/wiki">微信团队PhxPaxos项目的wiki</a><br>
+<a target="_blank" rel="noopener" href="https://www.cnblogs.com/richaaaard/p/6297104.html">Paxos相关博客</a></p>
+<p><strong>Multi Paxos</strong> 需要运行多次Paxos Instance，使用logID标识每条log日志以及对应的Paxos Instance，logID全局唯一且自增</p>
+<p>multi-paxos协议中有一个Leader。Leader是系统中唯一的Proposal，在lease租约周期内所有提案都有相同的ProposalId，可以跳过prepare阶段，议案只有accept过程</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos.png?raw=true" alt></p>
+<h4><span id="选择日志项">选择日志项</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-select-entry.jpg?raw=true" alt></p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-select-log-entry-1.jpg?raw=true" alt></p>
+<h4><span id="提高效率">提高效率</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-0.png?raw=true" alt></p>
+<p>众所周知Basic Paxos算法的Latency很高，串行运行Basic Paxos效率很差</p>
+<p>Multi-Paxos算法希望找到多个Instance的Paxos算法之间的联系，从而尝试在某些情况去掉Prepare步骤</p>
+<p>首先我们定义Multi-Paxos的参与要素：</p>
+<ol>
+<li>3个参与节点 A/B/C.</li>
+<li><strong>Prepare(b)</strong> NodeA节点发起Prepare携带的编号，即<strong>proposalId</strong></li>
+<li><strong>Promise(b)</strong> NodeA节点承诺的编号，即<strong>minProposal</strong></li>
+<li><strong>Accept(b)</strong> NodeA节点发起Accept携带的编号，即<strong>acceptedProposal</strong></li>
+</ol>
+<p>下面图中：</p>
+<p>1(A)的意思是A节点产生的编号1，2(B)代表编号2由B节点产生。绿色表示Accept通过，红色表示拒绝。</p>
+<ul>
+<li>A/B/C三节点并行提交</li>
+</ul>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-1.png?raw=true" alt></p>
+<p>这种情况下NodeA节点几乎每个Instance都收到其他节点发来的Prepare，导致Promise编号过大，迫使自己不断提升编号来Prepare。这种情况并未能找到任何的优化突破口</p>
+<ul>
+<li>只有A节点提交</li>
+</ul>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-2.png?raw=true" alt></p>
+<p>这种情况我们会立刻发现，在没有其他节点提交的干扰下，每次Prepare的编号都是一样的。于是乎我们想，为何不把Promised(b)变成全局的？来看下图：</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-3.png?raw=true" alt></p>
+<p>假设我们在Instance i进行Prepare(b)，我们要求对这个b进行Promise的生效范围是Instance[i, ∞)，那么在i之后我们就无需在做任何Prepare了。可想而知，假设上图Instance 1之后都没有任何除NodeA之外其他节点的提交，我们就可以预期接下来Node A的Accept都是可以通过的。那么这个去Prepare状态什么时候打破？我们来看有其他节点进行提交的情况：</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-4.png?raw=true" alt></p>
+<p>Instance 4出现了B的提交，使得Promised(b)变成了2(B), 从而导致Node A的Accept被拒绝。而NodeA如何继续提交？必须得提高自己的Prepare编号从而抢占Promised(b)。这里出现了很明显的去Prepare的窗口期Instance[1,3]，而这种期间很明显的标志就是只有一个节点在提交。</p>
+<ul>
+<li>优化内容</li>
+</ul>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-efficiency.jpg?raw=true" alt></p>
+<p>Multi-Paxos通过改变Promised(b)的生效范围至全局的Instance，从而使得一些唯一节点的连续提交获得去Prepare的效果。Leader的作用是希望大部分时间都只有一个节点在提交，这样才能最大发挥Mulit-Paxos的优化效果</p>
+<h4><span id="选主方法">选主方法</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-leader-election.jpg?raw=true" alt></p>
+<p>实际上大多数系统都不会采用这种选举方式，它们会采用基于租约的方式</p>
+<h4><span id="减少prepare">减少prepare</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-eliminate-prepare.jpg?raw=true" alt></p>
+<h4><span id="复制完整性">复制完整性</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-full-disclosure.jpg?raw=true" alt></p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-full-disclosure-1.jpg?raw=true" alt></p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-full-disclosure-2.jpg?raw=true" alt></p>
+<h4><span id="配置变更">配置变更</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-configuration-change.jpg?raw=true" alt></p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-configuration-change-1.jpg?raw=true" alt></p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/from-paxos-to-zookeeper/multi-paxos-configuration-change-2.jpg?raw=true" alt></p>
+<h1><span id="第3章-paxos的工程世界">第3章 Paxos的工程世界</span></h1>
+<h1><span id="第4章-zookeeper与paxos">第4章 Zookeeper与Paxos</span></h1>
+<h2><span id="41-初识zookeeper">4.1 初识ZooKeeper</span></h2>
+<p>ZooKeeper作为一个分布式协调框架，主要用于解决分布式数据一致性的问题。分布式应用程序可以基于它实现诸如数据发布/订阅，分布式锁，Master选举等功能。</p>
+<h3><span id="411-支持特性">4.1.1 支持特性</span></h3>
+<p><strong>顺序一致性</strong> 同一客户端发起的事务请求，会严格地按照其发起的顺序应用到ZooKeeper<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/59ea658a1313">博文:共识、线性一致和顺序一致</a></p>
+<p><strong>原子性</strong> 要么所有节点都成功执行了事务，要么全都没有执行</p>
+<p><strong>单一视图</strong> 无论客户端连接的是哪个ZooKeeper服务器，看到的数据模型都是一样的</p>
+<p><strong>可靠性</strong> 事务引起的服务端状态变更会被一直保留下来</p>
+<p><strong>实时性</strong> ZooKeeper仅仅保证一定时间内，客户端能读到最新数据</p>
+<h3><span id="412-设计目标">4.1.2 设计目标</span></h3>
+<p><strong>简单的数据模型</strong> 使得分布式程序能通过一个共享的，树形结构的名字空间来相互协调。其数据模型类似于一个文件系统</p>
+<p><strong>可以构建集群</strong> 集群的每台机器都会在内存中维护服务器状态，并且每台机器互相保持通信，只要有半数以上的机器正常工作，就能正常对外服务</p>
+<p><strong>顺序访问</strong> 每个更新请求，都有有一个全局唯一的递增编号</p>
+<p><strong>高性能</strong> ZooKeeper将全量数据存储在内存中，适用于以读为主的应用场景</p>
+<h3><span id="413-基本概念">4.1.3 基本概念</span></h3>
+<h4><span id="集群角色">集群角色</span></h4>
+<p>ZooKeeper集群的所有机器通过一个Leader选举过程来选定一台被称为Leader的机器，Leader服务器为客户端提供读和写服务</p>
+<p>Follower和Observer都能提供读服务，不能提供写服务。两者唯一的区别在于，Observer机器不参与Leader选举过程，也不参与写操作的『过半写成功』策略，因此Observer可以在不影响写性能的情况下提升集群的读性能</p>
+<h4><span id="会话">会话</span></h4>
+<p>一个客户端连接是指客户端和ZooKeeper服务器之间的TCP长连接</p>
+<p>通过这个连接，客户端能够通过心跳检测和服务器保持有效的会话，也能够向ZooKeeper服务器发送请求并接受响应，同时还能通过该连接接收来自服务器的Watch事件通知</p>
+<h4><span id="数据节点">数据节点</span></h4>
+<p>而ZooKeeper中的数据节点是指数据模型中的数据单元，称为ZNode</p>
+<p>ZooKeeper将所有数据存储在内存中，数据模型是一棵树(ZNode Tree)，由斜杠(/)进行分割的路径，就是一个ZNode，如/hbase/master,其中hbase和master都是ZNode</p>
+<p>每个ZNode上都会保存自己的数据内容，同时会保存一系列属性信息</p>
+<p>在ZooKeeper中，ZNode可以分为持久节点和临时节点两类。持久节点需要主动进行ZNode移除操作，临时节点的生命周期与客户端会话绑定</p>
+<p><strong>sequential属性</strong> 节点被创建的时候，ZooKeeper会自动在其节点名后面追加上一个整型数字，这个整型数字是一个父节点维护的自增数字</p>
+<h4><span id="watcher">Watcher</span></h4>
+<p>ZooKeeper允许用户在指定节点上注册一些Watcher(事件监听器)</p>
+<p>并且在一些特定事件触发的时候，ZooKeeper服务端会将事件通知到感兴趣的客户端上去</p>
+<h4><span id="acl">ACL</span></h4>
+<p>ZooKeeper采用ACL(Access Control Lists)策略来进行权限控制</p>
+<h2><span id="42-zookeeper的zab协议">4.2 ZooKeeper的ZAB协议</span></h2>
+<p>ZooKeeper采用ZooKeeper Atomic Broadcast(ZAB 原子消息广播协议)算法</p>
+<p>ZooKeeper使用一个单一主进程来处理所有事物请求，并采用ZAB，将服务器数据的状态变更广播到所有副本进程上</p>
+<h3><span id="421-协议介绍">4.2.1 协议介绍</span></h3>
+<p>ZAB包括两种基本模式，分别是崩溃恢复和消息广播</p>
+<p>当Leader服务器出现网络中断或者崩溃，ZAB协议会进入恢复模式并选举新的Leader</p>
+<p>当集群中过半的Follower完成了Leader的状态同步，整个服务框架就可以进入消息广播模式了</p>
+<p>如果非Leader节点收到客户端的事务请求，会转发给Leader</p>
+<h3><span id="422-消息广播">4.2.2 消息广播</span></h3>
+<h4><span id="取消中断">取消中断</span></h4>
+<p>在ZAB的二阶段提交过程中，移除了中断逻辑</p>
+<p>意味着可以在过半节点反馈ACK之后提交事务</p>
+<p>需要崩溃恢复模式来解决Leader崩溃带来的数据不一致问题</p>
+<h4><span id="顺序一致性">顺序一致性</span></h4>
+<p>在消息广播的过程中，Leader会为每一个事务Proposal分配一个全局递增唯一的ID</p>
+<p>Leader会为每个Follower分配一个单独队列，按zxid的先后顺序以FIFO的策略进行消息广播</p>
+<p>Follower在接收到这个事务的Proposal之后，会将其以事务日志的形式写入到磁盘中去，并向Leader反馈ACK</p>
+<p>当Leader收到半数节点的ACK时，会广播一个commit消息通知其他节点进行事务提交，同时自己也完成事务提交</p>
+<h3><span id="423-崩溃恢复">4.2.3 崩溃恢复</span></h3>
+<p>Leader选举算法应该保证：已经在Leader上提交的事务最终也被其他节点都提交，即使出现了Leader挂掉，Commit消息没发出去这种情况。</p>
+<p>确保丢弃只在Leader上被提出的事务。Leader提出一个事务后挂了，集群中别的节点都没收到，当挂掉的节点恢复后，要确保丢弃那个事务。</p>
+<p>让Leader选举算法能够保证新选举出来的Leader拥有最大的事务ID的Proposal。</p>
+<h3><span id="424-数据同步">4.2.4 数据同步</span></h3>
+<p>在完成Leader选举后，Leader会首先确认事务日志中所有Proposal是否都被集群中过半的节点提交了，即是否完成数据同步。</p>
+<h3><span id="425-事务">4.2.5 事务</span></h3>
+<p>是一个64位数，低32位是一个单调递增的计数器，每一个新的Proposal产生，该计数器都会+1.</p>
+<p>高32位代表Leader周期epoch编号，每当选举出新Leader，会取得这个Leader的最大事务ID，对其高32位+1.低32位清零。</p>
+<p>ZAB通过epoch来区分Leader周期变化的策略，简化和提升了数据恢复的流程。</p>
+<h3><span id="426-心跳检测">4.2.6 心跳检测</span></h3>
+<p>Leader和Follower通过心跳检测来感知彼此的情况。</p>
+<p>如果Leader在指定时间内无法从过半的Follower那收到心跳检测，或者是TCP连接本身断开了，会重新选举Leader。</p>
+<p>心跳是从follower向leader发送心跳</p>
+<h1><span id="第5章-使用zookeeper">第5章 使用Zookeeper</span></h1>
+<h1><span id="第6章-zookeeper的典型应用场景">第6章 ZooKeeper的典型应用场景</span></h1>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000012185452">zookeeper实战系列</a></p>
+<h2><span id="61-典型应用场景及实现">6.1 典型应用场景及实现</span></h2>
+<h3><span id="611-数据发布订阅">6.1.1 数据发布/订阅</span></h3>
+<p>数据发布/订阅系统，即所谓的配置中心。发布/订阅系统有两种模式：推模式和拉模式</p>
+<ol>
+<li>推模式：服务端主动将数据更新发送给所有订阅的客户端</li>
+<li>拉模式：客户端主动发起请求来获取最新数据</li>
+</ol>
+<p>ZooKeeper采用推拉结合的方式：客户端向服务端注册自己需要关注的节点，一旦节点的数据发生变更，那么服务端就会向相应的客户端发送Watcher事件通知。客户端收到这个通知之后，需要主动到服务端获取最新的数据</p>
+<h3><span id="612-负载均衡">6.1.2 负载均衡</span></h3>
+<p>ZooKeeper实现动态DNS方案(Dynamic DNS, DDNS)，应用从域名节点获取一份IP地址和端口的配置，进行自行解析</p>
+<p>每个应用还会在域名节点注册一个数据变更Watcher监听，以便及时收到域名变更的通知</p>
+<h3><span id="613-命名服务">6.1.3 命名服务</span></h3>
+<p>客户端应用能够根据指定名字来获取资源或服务的地址，提供者等信息。被命名的实体通常可以是集群中的机器，提供的服务，远程对象等等——这些我们都可以统称他们为名字（Name）。</p>
+<p>其中较为常见的就是一些分布式服务框架（如RPC、RMI）中的服务地址列表。通过在ZooKeepr里创建顺序节点，能够很容易创建一个全局唯一的路径，这个路径就可以作为一个名字。</p>
+<p>ZooKeeper的命名服务即生成全局唯一的ID</p>
+<h3><span id="614-分布式协调通知">6.1.4 分布式协调/通知</span></h3>
+<p>基于ZooKeeper实现分布式协调与通知功能，将分布式协调的职责从应用中分离出来</p>
+<p>不同客户端对ZooKeeper上同一个数据节点进行Watcher注册，监听数据节点变化</p>
+<h3><span id="615-集群管理">6.1.5 集群管理</span></h3>
+<p>利用ZooKeeper两大特性</p>
+<h3><span id="616-master选举">6.1.6 Master选举</span></h3>
+<p>ZooKeeper将会保证客户端无法重复创建一个已经存在的数据节点</p>
+<p>客户端定时往ZooKeeper上创建临时节点，比如<code>/master_election/2000-01-01/binding</code></p>
+<p>只有一个客户端能成功创建这个节点，这个客户端称为master</p>
+<p>其他客户端在节点<code>/master_election/2000-01-01</code>上注册子节点变更的watcher</p>
+<p>一旦发现master机器挂了，其余的客户端将会重新进行master选举</p>
+<h3><span id="617-分布式锁">6.1.7 分布式锁</span></h3>
+<p>分布式锁是控制分布式系统之间同步访问共享资源的一种方式</p>
+<h4><span id="排他锁">排他锁</span></h4>
+<ul>
+<li>
+<p>定义锁</p>
+<p>通过ZooKeeper上的一个数据节点来表示一个锁，例如<code>/exclusive_lock/lock</code>节点就可以被定义为一个锁</p>
+</li>
+<li>
+<p>获取锁</p>
+<p>在需要获取锁时，所有客户端都会试图调用create（）接口，在<code>/exclusive_lock</code>节点下创建临时节点<code>/exclusive_lock/lock</code></p>
+<p>最终只有一个客户端能成功，就可以认为该客户端获取了锁。其他没获取锁的客户端会在/exclusive_lock节点上注册监听，实时监听lock节点的变更情况</p>
+</li>
+<li>
+<p>释放锁</p>
+<p>获取锁的客户端宕机了，临时节点会被移除</p>
+<p>正常执行完业务逻辑后，客户端会主动删除临时节点</p>
+</li>
+</ul>
+<h4><span id="共享锁">共享锁</span></h4>
+<ul>
+<li>
+<p>定义锁</p>
+<p>通过ZooKeeper上的一个临时顺序节点来表示一个锁</p>
+<p>例如<code>/shared_lock/host1-R-000001</code></p>
+</li>
+<li>
+<p>获取锁</p>
+<p>在需要获取锁时，所有客户端都会到<code>/shared_lock</code>下创建临时顺序节点。</p>
+<p>如果是读请求，就创建例如<code>/shared_lock/host1-R-000001</code>的节点</p>
+<p>如果是写请求，就创建例如<code>/shared_lock/host2-W-000002</code>的节点</p>
+<p>写操作必须在当前没有任何事务进行读写操作的情况下进行。</p>
+<p>对于读请求，如果比自己序号小的节点中有写请求，就进入等待。</p>
+<p>对于写请求，如果自己不是序号最小的子序号，就进入等待。</p>
+</li>
+<li>
+<p>释放锁</p>
+<p>和排他锁一样</p>
+</li>
+<li>
+<p>羊群效应</p>
+</li>
+</ul>
+<p>客户端无端收到过多和自己不相关的事件通知</p>
+<p>每个节点应该只需要关注比自己小的那个节点的变更。而不需要关心全局</p>
+<ul>
+<li>
+<p>改进</p>
+<p>读请求：向比自己序号小的最后一个写请求节点，注册监听</p>
+<p>写请求 向比自己序号小的节点注册监听</p>
+</li>
+</ul>
+<h3><span id="618-分布式队列">6.1.8 分布式队列</span></h3>
+<h4><span id="fifo">FIFO</span></h4>
+<p>所有客户端都会到节点<code>/queue_fifo</code>下面创建一个临时顺序节点</p>
+<p>如果自己不是序号最小的节点对比自己序号小的最后一个节点，注册watcher监听</p>
+<p>如果是，执行操作后删除节点</p>
+<h4><span id="barrier-分布式屏障">Barrier 分布式屏障</span></h4>
+<p>通过在Zookeeper设置栅栏节点实现Barrier，节点的名字我们叫做<code>/zookeeper/barrier</code></p>
+<ol>
+<li>客户端在Barrier节点上调用exists()方法，并设置观察器</li>
+<li>如果Barrier节点不存在，则线程继续执行</li>
+<li>如果Barrier节点存在，则线程等待，直到触发观察器事件，并且事件是Barrier节点消失的事件，唤起线程</li>
+</ol>
+<h1><span id="第7章-zookeeper技术内幕">第7章 ZooKeeper技术内幕</span></h1>
+<h1><span id="第8章-zookeeper运维">第8章 ZooKeeper运维</span></h1>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/工程/os-three-easy-pieces/" data-toggle="tooltip" data-placement="top" title="「操作系统导论」学习笔记">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/算法/linxuantian-machine-learning/" data-toggle="tooltip" data-placement="top" title="「林轩田机器学习」学习笔记[DOING]">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">建议阅读顺序</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">问题：zookeeper如何保证半数提交后剩下的节点上最新的数据</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">第1章 分布式架构</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">1.1 从集中式到分布式</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.1.</span> <span class="toc-nav-text">1.1.1 集中式特点</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.2.</span> <span class="toc-nav-text">1.1.2 分布式特点</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.3.</span> <span class="toc-nav-text">1.1.3 分布式环境的各种问题</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.4.</span> <span class="toc-nav-text">1.1.4 分布式事务</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">1.2 一致性理论</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">1.2.1 ACID</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.2.2.</span> <span class="toc-nav-text">1.2.2 CAP</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.2.2.1.</span> <span class="toc-nav-text">一致性</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.2.2.2.</span> <span class="toc-nav-text">可用性</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.2.2.3.</span> <span class="toc-nav-text">分区容错性</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.2.2.4.</span> <span class="toc-nav-text">CAP的矛盾</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.2.3.</span> <span class="toc-nav-text">1.2.3 BASE</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">第2章 一致性协议</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">2.1 2PC和3PC</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.1.</span> <span class="toc-nav-text">2.1.1 2PC</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.1.1.1.</span> <span class="toc-nav-text">流程</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.1.1.2.</span> <span class="toc-nav-text">分析</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.2.</span> <span class="toc-nav-text">2.1.2 3PC</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.1.2.1.</span> <span class="toc-nav-text">流程</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.1.2.2.</span> <span class="toc-nav-text">分析</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">2.2 Paxos算法</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.1.</span> <span class="toc-nav-text">2.2.1 概念与术语</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.</span> <span class="toc-nav-text">2.2.2 Basic Paxos</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.1.</span> <span class="toc-nav-text">单点问题</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.2.</span> <span class="toc-nav-text">平分提案</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.3.</span> <span class="toc-nav-text">选择冲突</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.4.</span> <span class="toc-nav-text">提案编号</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.5.</span> <span class="toc-nav-text">算法流程</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.6.</span> <span class="toc-nav-text">提案覆盖</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.7.</span> <span class="toc-nav-text">算法缺陷</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.</span> <span class="toc-nav-text">2.2.3 Multi Paxos</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.1.</span> <span class="toc-nav-text">选择日志项</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.2.</span> <span class="toc-nav-text">提高效率</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.3.</span> <span class="toc-nav-text">选主方法</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.4.</span> <span class="toc-nav-text">减少prepare</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.5.</span> <span class="toc-nav-text">复制完整性</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.2.3.6.</span> <span class="toc-nav-text">配置变更</span></a></li></ol></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">第3章 Paxos的工程世界</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">5.</span> <span class="toc-nav-text">第4章 Zookeeper与Paxos</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.1.</span> <span class="toc-nav-text">4.1 初识ZooKeeper</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.1.</span> <span class="toc-nav-text">4.1.1 支持特性</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.2.</span> <span class="toc-nav-text">4.1.2 设计目标</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.</span> <span class="toc-nav-text">4.1.3 基本概念</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.1.</span> <span class="toc-nav-text">集群角色</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.2.</span> <span class="toc-nav-text">会话</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.3.</span> <span class="toc-nav-text">数据节点</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.4.</span> <span class="toc-nav-text">Watcher</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.1.3.5.</span> <span class="toc-nav-text">ACL</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.2.</span> <span class="toc-nav-text">4.2 ZooKeeper的ZAB协议</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.1.</span> <span class="toc-nav-text">4.2.1 协议介绍</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.2.</span> <span class="toc-nav-text">4.2.2 消息广播</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.2.2.1.</span> <span class="toc-nav-text">取消中断</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">5.2.2.2.</span> <span class="toc-nav-text">顺序一致性</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.3.</span> <span class="toc-nav-text">4.2.3 崩溃恢复</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.4.</span> <span class="toc-nav-text">4.2.4 数据同步</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.5.</span> <span class="toc-nav-text">4.2.5 事务</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.2.6.</span> <span class="toc-nav-text">4.2.6 心跳检测</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">6.</span> <span class="toc-nav-text">第5章 使用Zookeeper</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">7.</span> <span class="toc-nav-text">第6章 ZooKeeper的典型应用场景</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">7.1.</span> <span class="toc-nav-text">6.1 典型应用场景及实现</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.1.</span> <span class="toc-nav-text">6.1.1 数据发布&#x2F;订阅</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.2.</span> <span class="toc-nav-text">6.1.2 负载均衡</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.3.</span> <span class="toc-nav-text">6.1.3 命名服务</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.4.</span> <span class="toc-nav-text">6.1.4 分布式协调&#x2F;通知</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.5.</span> <span class="toc-nav-text">6.1.5 集群管理</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.6.</span> <span class="toc-nav-text">6.1.6 Master选举</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.7.</span> <span class="toc-nav-text">6.1.7 分布式锁</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">7.1.7.1.</span> <span class="toc-nav-text">排他锁</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">7.1.7.2.</span> <span class="toc-nav-text">共享锁</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">7.1.8.</span> <span class="toc-nav-text">6.1.8 分布式队列</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">7.1.8.1.</span> <span class="toc-nav-text">FIFO</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">7.1.8.2.</span> <span class="toc-nav-text">Barrier 分布式屏障</span></a></li></ol></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">8.</span> <span class="toc-nav-text">第7章 ZooKeeper技术内幕</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">9.</span> <span class="toc-nav-text">第8章 ZooKeeper运维</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#gateway" title="gateway">gateway</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 
+                    2021 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    追寻梦之碎片 
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://blog.soaringhawkcheng.tech/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://blog.soaringhawkcheng.tech/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

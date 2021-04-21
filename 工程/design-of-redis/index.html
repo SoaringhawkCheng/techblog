@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          「Redis设计与实现」学习笔记[DOING] - 沙罗双树园 | 追寻梦之碎片
+        
+    </title>
+
+    <link rel="canonical" href="https://blog.soaringhawkcheng.tech/工程/design-of-redis/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/vintage/article.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#cache" title="cache">cache</a>
+                            
+                        </div>
+                        <h1>「Redis设计与实现」学习笔记[DOING]</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by 追寻梦之碎片 on
+                            2020-05-12
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">沙罗双树园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>书籍豆瓣链接：<a target="_blank" rel="noopener" href="https://book.douban.com/subject/25900156/">《Redis设计与实现》</a></p>
+<p>开始学习时间：</p>
+<p>预计完成时间：</p>
+<p>实际完成时间：</p>
+</blockquote>
+<h1><span id="数据结构与对象">数据结构与对象</span></h1>
+<h2><span id="简单动态字符串sds">简单动态字符串sds</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/1.png?raw=true" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. 记录字符串长度len，常数时间将获得字符串长度</span><br><span class="line">2. 杜绝缓冲区溢出，对sds修改时先检查空间是否满足修改所需的要求</span><br><span class="line">3. 减少内存重分配次数</span><br><span class="line">	空间预分配，空间扩展的时候，额外分配内存len(sds)&gt;&#x3D;1MB?1MB:len(sds)</span><br><span class="line">	惰性空间释放，free属性记录空闲空间，提供api释放空间</span><br><span class="line">4. 二进制安全，sds api以二进制的方式处理sds存放在buf数组里的数据</span><br></pre></td></tr></table></figure>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/2.png?raw=true" alt></p>
+<h2><span id="链表list">链表list</span></h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">双端，prev和next指针 </span><br><span class="line">无环，prev和next指针指向null</span><br><span class="line">带表头表尾指针，head tail</span><br><span class="line">带链表长度计数器，len</span><br><span class="line">多态，通过void*指针来实现</span><br></pre></td></tr></table></figure>
+<h2><span id="字典dictht">字典dictht</span></h2>
+<p>hashtable</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">槽数量size，掩码sizemask&#x3D;size-1，used槽使用数量,</span><br><span class="line">负载因子 load_factor&#x3D;used&#x2F;size</span><br><span class="line">哈希表ht包含两个hashtable，ht[1]用于rehash</span><br></pre></td></tr></table></figure>
+<p>rehash</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">时间</span><br><span class="line">1. if BGSAVE和BGREWRITEAOF &amp;&amp; 负载因子&gt;&#x3D;5</span><br><span class="line">2. if not BGSAVE和BGREWRITEAOF &amp;&amp; 负载因子&gt;&#x3D;1</span><br><span class="line">3. 负载因子&lt;&#x3D;0.1</span><br><span class="line">分配空间</span><br><span class="line">1. 扩展操作，ht[1].size&#x3D;第一个大于等于ht[0].used*2的2**n</span><br><span class="line">2. 收缩操作，ht[1].size&#x3D;第一个大于等于ht[0].used的2**n</span><br></pre></td></tr></table></figure>
+<p>渐进式rehash</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">步骤</span><br><span class="line">1. 新分配的一个table ht[1]，维持一个索引计数器rehashidx，初始值为0，rehash工作正式开始</span><br><span class="line">2. 每次对字典执行crud，将当前rehashidx索引上的所有键值对rehash，结束后rehashidx增一</span><br><span class="line">3. rehash完成时，rehashidx属性的值-1</span><br><span class="line">期间</span><br><span class="line">1. create ht[1]</span><br><span class="line">2. delete ht[0]和ht[1]都删除</span><br><span class="line">3. retrieve 先ht[0]后ht[1]</span><br><span class="line">4. update ht[0]和ht[1]都更新</span><br></pre></td></tr></table></figure>
+<h3><span id></span></h3>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/3.png?raw=true" alt></p>
+<h2><span id="跳跃表skiplist">跳跃表skiplist</span></h2>
+<p>表数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">head tail</span><br><span class="line">level 层数</span><br><span class="line">length 跳跃表长度</span><br><span class="line">头结点 长度为32的level数组</span><br></pre></td></tr></table></figure>
+<p>节点数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">level数组</span><br><span class="line">	长度1-32随机</span><br><span class="line">	前进指阵，跨度，跨度用于计算rank</span><br><span class="line">backward指针</span><br><span class="line">分值</span><br><span class="line">成员</span><br></pre></td></tr></table></figure>
+<h2><span id="整数集合intset">整数集合intset</span></h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">contents 申明为int8数组</span><br><span class="line">encoding 保存数组真正类型</span><br><span class="line">contents item按从小到大排列</span><br></pre></td></tr></table></figure>
+<h2><span id="压缩列表ziplist">压缩列表ziplist</span></h2>
+<p>表数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+<p>节点数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">previous_length 1 or 5字节</span><br><span class="line">encoding </span><br><span class="line">content </span><br></pre></td></tr></table></figure>
+<h2><span id="对象">对象</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/4.png?raw=true" alt></p>
+<p>对象数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">type</span><br><span class="line">encoding</span><br><span class="line">ptr 指向底层实现</span><br></pre></td></tr></table></figure>
+<p>字符串对象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int ptr指向long</span><br><span class="line">raw</span><br><span class="line">embstr object和sdshdr在连续空间，只读，如果要写，从embstr转换成raw</span><br></pre></td></tr></table></figure>
+<p>列表对象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+<p>对象共享</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">初始化服务器，创建0-9999，1万个对象</span><br></pre></td></tr></table></figure>
+<h1><span id="单机数据库">单机数据库</span></h1>
+<h2><span id="数据库">数据库</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/5.png?raw=true" alt></p>
+<p>数据库</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redisDb *db 维护一组数据库 select 下标选择</span><br></pre></td></tr></table></figure>
+<p>键空间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">读写键空间的维护操作</span><br><span class="line"></span><br><span class="line">读</span><br><span class="line">更新键空间hit和miss次数</span><br><span class="line">更新键的LRU时间</span><br><span class="line">发现键过期，删除过期键</span><br><span class="line"></span><br><span class="line">写</span><br><span class="line">如果客户端用WATCH命令监视这个键，将键标记为dirty</span><br><span class="line">修改键后dirty计数增1</span><br></pre></td></tr></table></figure>
+<p>过期删除策略</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">定时删除：设置键过期时间同时，创建定时器，定时删除</span><br><span class="line">惰性删除：每次从键空间获取键，如果过期就删除，没过期就返回</span><br><span class="line">定期删除：每隔一段时间，批量删除过期键</span><br></pre></td></tr></table></figure>
+<p>过期键处理</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">RDB</span><br><span class="line">生成RDB文件，已过期的键不会被保存</span><br><span class="line">载入RDB文件，主服务器</span><br><span class="line"></span><br><span class="line">AOF</span><br><span class="line"># 过期键不会对AOF写入和重写造成影响</span><br><span class="line"></span><br><span class="line">复制</span><br><span class="line"># 由主服务统一删除过期键，并向从服务器发送DEL链接</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/6.png?raw=true" alt></p>
+<h2><span id="rdb持久化">RDB持久化</span></h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BGSAVE派生出一个子进程，然后子进程负责创建RDB文件</span><br><span class="line">因为写时复制，子进程带有服务器进程的数据副本，可以在避免使用锁的情况下，保证数据安全性</span><br><span class="line">服务器启动，AOF更新频率高，优先使用RDB文件还原数据库</span><br><span class="line">serviceCon每个一段时间执行一次，根据dirty和lastsave是否满足条件，执行BGSAVE</span><br></pre></td></tr></table></figure>
+<h2><span id="aof持久化">AOF持久化</span></h2>
+<p>AOF持久化步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">1. 命令追加</span><br><span class="line">服务器实时将写命令追加到服务器状态的aof_buf缓冲区末尾</span><br><span class="line"></span><br><span class="line">2. 文件写入</span><br><span class="line">每次结束一个事件循环，会调用flushAppendOnlyFile，考虑是否将aof_buf写入到AOF文件</span><br><span class="line"></span><br><span class="line">3. 文件同步</span><br><span class="line">write只会更新页缓存，脏页的更新取决于os，系统提供fsync和fdatasync两个同步函数</span><br><span class="line">appendfsync配置</span><br><span class="line">	always 每个事件循环写入并同步</span><br><span class="line">	everysec 每个事件循环写入，每个1s同步</span><br><span class="line">	no 每个事件循环写入，同步由os</span><br></pre></td></tr></table></figure>
+<p>AOF载入与数据还原</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">创建一个不带网络链接的伪客户端</span><br><span class="line">从AOF文件中分析并执行写命令</span><br></pre></td></tr></table></figure>
+<p>AOF重写步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">跟RDB一样，也是使用子进程进程后端AOF重写</span><br><span class="line"></span><br><span class="line">1. 设置重写缓冲区，服务端进程在执行客户端命令的时候，同时往AOF缓冲区和重写缓冲区追加命令</span><br><span class="line">2. 重写完成后，子进程向父进程发送信号，父进程调用信号处理函数(中断)，将重写缓冲区写入新AOF文件</span><br><span class="line">3. 对新AOF文件改名，原子的覆盖旧文件</span><br></pre></td></tr></table></figure>
+<h2><span id="事件">事件</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/7.png?raw=true" alt></p>
+<p>文件事件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reactor模式，I&#x2F;O多路复用+单进程，简单，避免上下文切换带来的消耗</span><br><span class="line">产生事件的套接字放到队列，每次把一个套接字传送给文件事件分派器</span><br><span class="line">套接字编程可读或acceptable时，产生READABLE事件，编程可写，产生WRITEABLE事件，</span><br><span class="line">允许同时监听READABLE和WRITEABLE事件，先读后写</span><br><span class="line">具体看源码</span><br></pre></td></tr></table></figure>
+<p>时间事件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">分为定时事件和周期性事件，redis只是用周期性事件</span><br><span class="line">一般情况下只执行serverCron一个时间事件</span><br><span class="line">调度规则</span><br><span class="line">1. 事件循环的最大阻塞时间由最接近当前时间的时间事件决定</span><br><span class="line">2. 先处理所有已产生的文件事件，再处理所有已产生的时间事件</span><br></pre></td></tr></table></figure>
+<h2><span id="客户端">客户端</span></h2>
+<p>服务器为连接的客户端保存了client列表</p>
+<p>客户端属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">套接字描述符fd</span><br><span class="line">fd&#x3D;-1 伪客户端，一个载入AOF文件，一个执行lua脚本</span><br><span class="line">flags 客户端状态</span><br><span class="line">querybuf 保存客户端命令</span><br><span class="line">argv argc 服务器将querybuf解析到argv，argc中</span><br><span class="line">cmd 根据argv指向对应命令实现函数</span><br><span class="line">buf 固定输出缓冲区</span><br><span class="line">reply 可变输出缓冲区</span><br></pre></td></tr></table></figure>
+<p>客户端创建</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">使用connect函数连接到服务器</span><br></pre></td></tr></table></figure>
+<p>客户端关闭</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">客户端进程退出或杀死</span><br><span class="line">设置了timeout，空转客户端</span><br><span class="line">命令不符合协议格式或超出输入缓冲区大小</span><br><span class="line">命令回复超出输入缓冲区大小</span><br></pre></td></tr></table></figure>
+<h2><span id="服务器">服务器</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/8.png?raw=true" alt></p>
+<p>命令执行器step4 执行后续操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if 开启慢查询 检查是否添加慢查询日志</span><br><span class="line">更新cmd对应实现函数统计数据</span><br><span class="line">if aof 将命令写入到aof缓冲区</span><br><span class="line">if 有从服务器复制当前主服务器 将命令发给从服务器</span><br></pre></td></tr></table></figure>
+<p>命令回复给客户端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">将命令回复保存到客户端输出缓冲区，为客户端套接字关联命令回复处理器</span><br></pre></td></tr></table></figure>
+<p><strong>TODO</strong> 套接字什么时候可写</p>
+<h1><span id="多机数据库">多机数据库</span></h1>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/9.png?raw=true" alt></p>
+<h2><span id="复制">复制</span></h2>
+<p>旧版复制功能：同步和命令传播</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">同步</span><br><span class="line">	1. 从服务器发送SYNC命令</span><br><span class="line">	2. 主服务器BGSAVE，生成RDB文件，然后用一个缓冲区开始记录后续的执行命令</span><br><span class="line">	3. RDB文件发给从服务器，从服务器加载命令</span><br><span class="line">	4. 主服务器将缓冲区的写命令发送给从服务器</span><br><span class="line">命令传播</span><br><span class="line">	同步操作完毕后，服务器会将自己执行的命令发送给从服务器</span><br><span class="line">问题缺陷</span><br><span class="line">	不能高效处理断线重复制</span><br></pre></td></tr></table></figure>
+<p>新版复制功能：完整重同步，部分重同步</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">主从服务器分别维护一个复制偏移量offset</span><br><span class="line">复制积压缓冲区，命令传播时将命令写入复制挤压缓冲区里面，并为每个字节记录偏移量</span><br><span class="line">从服务器通过PSYNC将offset发给主服务器</span><br><span class="line">如果offset后面的数据在积压缓冲区，进行部分重同步，如果不在，进行完整全同步</span><br></pre></td></tr></table></figure>
+<p>心跳检测REPLCONF</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">从服务器1s一次，向主服务器发送命令：</span><br><span class="line">检测主从服务器的网络连接状态</span><br><span class="line">检测命令丢失，通过发送offset</span><br></pre></td></tr></table></figure>
+<h2><span id="哨兵高可用方案">哨兵(高可用方案)</span></h2>
+<p>故障转移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sentinel是redis的高可用方案</span><br><span class="line">当前server1下线时长超过用户设定的下线时长上限，sentinal就会对server1执行故障转移</span><br><span class="line">1. 挑选server1下的一个从服务器，并将被选中的从服务器升级为新的主服务器</span><br><span class="line">2. sentinel向server1下的所有从服务器发送复制指令，让它们称为新主服务器的从服务器，并进行复制</span><br><span class="line">3. 继续监视下线的server1，重新上线时，设置为从服务器</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>网络连接</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sentinel与服务器的连接</span><br><span class="line">	1. 命令连接 向服务器发送命令，并接收命令回复</span><br><span class="line">	2. 订阅连接 订阅__sentinel__:hello频道</span><br><span class="line"></span><br><span class="line">sentinel之间的连接 通过channel发现新sentinel，互相建立命令连接</span><br></pre></td></tr></table></figure>
+<p>sentinel命令类型</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">INFO命令 10s一次，通过命令连接向服务器发送INFO命令</span><br><span class="line">PING命令 根据回复判断是否在线，回复类型+PONG，-LOADING，-MASTERDOWN</span><br></pre></td></tr></table></figure>
+<p>下线判断</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">一定时间内，服务器连续向sentinel返回无效回复，判断为主观下线状态</span><br><span class="line">足够数量的已下线判断之后，将从服务器定位客观下线</span><br><span class="line">主服务器客观下线后，监视这个下线服务器的各个sentinel会选举出领头sentinel，对进行故障转移</span><br></pre></td></tr></table></figure>
+<h2><span id="集群分布式数据库方案">集群(分布式数据库方案)</span></h2>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/10.png?raw=true" alt></p>
+<p>集群</p>
+<p>数据结构</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">节点使用clusterNode记录自己状态</span><br><span class="line">节点使用clusterState保存集群状态</span><br><span class="line">clusterState中</span><br><span class="line">	slots[16384]记录所有指派信息</span><br><span class="line">	slots_to_keys跳跃表 保存槽与键的关系，每个链表节点的分值是槽号</span><br></pre></td></tr></table></figure>
+<p>重定向</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MOVED 槽的负责权转移到另一个节点，永久重定向</span><br><span class="line">ASK 迁移槽的过程中使用的一种临时措施，客户端只会在接下来一次命令请求重定向到ASK指定节点</span><br></pre></td></tr></table></figure>
+<p>复制和故障转移</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">故障检测</span><br><span class="line">集群每个节点定期向其他节点发送PING消息，检测对方是否在线</span><br><span class="line">当一半以上主节点将某个主节点x报告为疑似下线的时候</span><br><span class="line">会想集群广播主节点的FAIL消息，收到消息的节点将x标记为已下线</span><br><span class="line"></span><br><span class="line">故障转移</span><br><span class="line">新主节点向集群广播一条PONG消息</span><br></pre></td></tr></table></figure>
+<h1><span id="独立功能">独立功能</span></h1>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/design-of-redis/11.png?raw=true" alt></p>
+<h2><span id="发布与订阅">发布与订阅</span></h2>
+<h2><span id="事务">事务</span></h2>
+<p>事务的实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">事务的阶段</span><br><span class="line">1. 事务开始</span><br><span class="line">MULTI，客户端状态的flags属性打开REDIS_MULTI标识</span><br><span class="line">2. 命令入队</span><br><span class="line">客户端切换到事务状态后，</span><br><span class="line">如果发送EXEC DISCARD WATCH MULTI，服务器会立刻执行</span><br><span class="line">如果是其他命令，不会立刻执行，而是放入事务队列里，返回QUEUED回复</span><br><span class="line">3. 执行事务</span><br></pre></td></tr></table></figure>
+<p>WATCH</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WATCH是乐观锁，可以在EXEC命令执行之前，监视若干数据库键</span><br><span class="line">如果被修改，服务器拒绝执行事务</span><br></pre></td></tr></table></figure>
+<p>redis事务的ACID性质</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">1. 	原子性 Atomic 事务中的多个操作，要么全部都执行，要么一个都不执行</span><br><span class="line">	redis不支持回滚，即是出错，也会继续执行下去</span><br><span class="line">2. 一致性 Consistency 无论事务是否执行成功，数据库是一致的，一致指的是符合数据库本身的定义和要求</span><br><span class="line">	redis进行了错误检测，入队错误，执行错误。另外服务器停机也具有一致性</span><br><span class="line">3. 隔离性 Isolation 并发执行的事务不会相互影响，结果完全相同</span><br><span class="line">	redis使用单线程执行事务，且不会中断</span><br><span class="line">4. 持久性 Duration 事务执行完毕，结果被持久化到硬盘中</span><br><span class="line">	服务器在无持久化的内存模式以及RDB持久化模式下的事务不具有持久性</span><br><span class="line">	AOF持久化模式，当且仅当appendfsync&#x3D;always，具有持久性</span><br></pre></td></tr></table></figure>
+<h2><span id="慢查询日志">慢查询日志</span></h2>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/工程/learning-kafka/" data-toggle="tooltip" data-placement="top" title="「深入理解Kafka」学习笔记">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/工程/design-of-linux-kernel/" data-toggle="tooltip" data-placement="top" title="「Linux内核设计与实现&深入理解Linux内核」学习笔记">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">数据结构与对象</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.1.</span> <span class="toc-nav-text">简单动态字符串sds</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.2.</span> <span class="toc-nav-text">链表list</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.3.</span> <span class="toc-nav-text">字典dictht</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">1.3.1.</span> <span class="toc-nav-text"></span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.4.</span> <span class="toc-nav-text">跳跃表skiplist</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.5.</span> <span class="toc-nav-text">整数集合intset</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.6.</span> <span class="toc-nav-text">压缩列表ziplist</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">1.7.</span> <span class="toc-nav-text">对象</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">单机数据库</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">数据库</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">RDB持久化</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">AOF持久化</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">事件</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.5.</span> <span class="toc-nav-text">客户端</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.6.</span> <span class="toc-nav-text">服务器</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">多机数据库</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">复制</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">哨兵(高可用方案)</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">集群(分布式数据库方案)</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">独立功能</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">发布与订阅</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.2.</span> <span class="toc-nav-text">事务</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.3.</span> <span class="toc-nav-text">慢查询日志</span></a></li></ol></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#cache" title="cache">cache</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 
+                    2021 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    追寻梦之碎片 
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://blog.soaringhawkcheng.tech/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://blog.soaringhawkcheng.tech/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

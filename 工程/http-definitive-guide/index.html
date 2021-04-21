@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          「HTTP权威指南」学习笔记 - 沙罗双树园 | 追寻梦之碎片
+        
+    </title>
+
+    <link rel="canonical" href="https://blog.soaringhawkcheng.tech/工程/http-definitive-guide/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/vintage/article.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#net" title="net">net</a>
+                            
+                        </div>
+                        <h1>「HTTP权威指南」学习笔记</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by 追寻梦之碎片 on
+                            2020-05-31
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">沙罗双树园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>书籍豆瓣链接：<a target="_blank" rel="noopener" href="https://book.douban.com/subject/10746113/">《HTTP权威指南》</a></p>
+<p>相关资料笔记：<a target="_blank" rel="noopener" href="https://github.com/SoaringhawkCheng/http">《HTTP权威指南》概念手册</a></p>
+<p>开始学习时间：</p>
+<p>预计完成时间：</p>
+<p>实际完成时间：</p>
+</blockquote>
+<h1><span id="前言">前言</span></h1>
+<p>《HTTP权威指南》中的主要概念和内容都在<a target="_blank" rel="noopener" href="https://github.com/SoaringhawkCheng/http">《HTTP权威指南》概念手册</a>中，本笔记对部分知识点进行了提炼和补充</p>
+<h1><span id="第一部分-http基础">第一部分 HTTP基础</span></h1>
+<h2><span id="第1章-http概述">第1章 HTTP概述</span></h2>
+<h3><span id="uri">URI</span></h3>
+<p>有两个子集URL和URN，URL受路径变化影响，URN不会</p>
+<h3><span id="事务">事务</span></h3>
+<p>一个HTTP事务由一条请求命令和一条响应结果组成</p>
+<h3><span id="web结构组件">web结构组件</span></h3>
+<p>隧道 连接通道，http信道上发送非http协议资源</p>
+<p>用户Agent代理 代表用户发起HTTP请求的客户端程序，所有发布Web请求的应用程序都是HTTP Agent代理，比如Web浏览器</p>
+<h2><span id="第2章-url与资源">第2章 URL与资源</span></h2>
+<h3><span id="url编码">url编码</span></h3>
+<p>为了避开安全字符集表示法带来的限制，使用编码机制，对不安全字符进行转义</p>
+<h2><span id="第3章-http报文">第3章 HTTP报文</span></h2>
+<h3><span id="方法">方法</span></h3>
+<p>HEAD 获取文档首部</p>
+<p>TRACE 对可能经过代理服务器传送到服务器上的报文进行追踪</p>
+<p>OPTIONS 请求服务器告知其支持什么功能</p>
+<h3><span id="状态码">状态码</span></h3>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000006058316">HTTP状态码详解与选用</a><br>
+<img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/code.png?raw=true" alt></p>
+<h4><span id="2xx-成功状态码">2xx 成功状态码</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/2xx.png?raw=true" alt></p>
+<h4><span id="3xx-重定向状态码">3xx 重定向状态码</span></h4>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>原因短语</th>
+<th>中文描述</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>300</td>
+<td>Multiple Choices</td>
+<td>多中选择</td>
+<td>客户端请求一个实际指向多个资源的URL</td>
+</tr>
+<tr>
+<td>301</td>
+<td>Moved Permanently</td>
+<td>永久重定向</td>
+<td></td>
+</tr>
+<tr>
+<td>302</td>
+<td>Found</td>
+<td>临时重定向(HTTP1.0)</td>
+<td>临时使用Location首部给出的URL来临时定位资源</td>
+</tr>
+<tr>
+<td>303</td>
+<td>See Other</td>
+<td>临时重定向(HTTP1.1)</td>
+<td>POST方法的重定向在未询问用户的情况变成GET</td>
+</tr>
+<tr>
+<td>304</td>
+<td>Not Modified</td>
+<td>未被修改</td>
+<td>响应条件GET请求</td>
+</tr>
+<tr>
+<td>307</td>
+<td>Temporary Redireat</td>
+<td>临时重定向(HTTP1.1)</td>
+<td>相当于HTTP1.0的302，不会把POST转为GET</td>
+</tr>
+<tr>
+<td>308</td>
+<td>Permanent Redireat</td>
+<td>临时重定向(HTTP1.1)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4><span id="4xx-客户端错误">4xx 客户端错误</span></h4>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>原因短语</th>
+<th>中文描述</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400</td>
+<td>Bad Request</td>
+<td>错误的请求</td>
+<td></td>
+</tr>
+<tr>
+<td>401</td>
+<td>Unauthorized</td>
+<td>未授权</td>
+<td></td>
+</tr>
+<tr>
+<td>403</td>
+<td>Forbidden</td>
+<td>拒绝访问</td>
+<td></td>
+</tr>
+<tr>
+<td>404</td>
+<td>Not Found</td>
+<td>未找到</td>
+<td></td>
+</tr>
+<tr>
+<td>405</td>
+<td>Method Not Allowd</td>
+<td>方法禁用</td>
+<td></td>
+</tr>
+<tr>
+<td>407</td>
+<td>Proxy Authentication Required</td>
+<td>需要代理授权</td>
+<td>见第十二章</td>
+</tr>
+<tr>
+<td>408</td>
+<td>Request Timeout</td>
+<td>超时提醒</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4><span id="5xx服务端错误">5xx服务端错误</span></h4>
+<table>
+<thead>
+<tr>
+<th>状态码</th>
+<th>原因短语</th>
+<th>中文描述</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>500</td>
+<td>Internal Server Error</td>
+<td>服务器内部错误</td>
+<td>所请求的服务器遇到意外的情况并阻止其执行请求</td>
+</tr>
+<tr>
+<td>501</td>
+<td>Not Implemented</td>
+<td>请求未实现</td>
+<td>只有GET和HEAD是要求服务器支持的，它们必定不会返回此错误代码</td>
+</tr>
+<tr>
+<td>502</td>
+<td>Bad Gateway</td>
+<td>网关错误</td>
+<td>表示作为网关或代理角色的服务器，从上游服务器中接收到的响应是无效的</td>
+</tr>
+<tr>
+<td>503</td>
+<td>Service Unavailable</td>
+<td>服务器不可用</td>
+<td>通常造成这种情况的原因是由于服务器停机维护或者已超载</td>
+</tr>
+<tr>
+<td>504</td>
+<td>Gateway Timeout</td>
+<td>网关超时</td>
+<td>当服务器作为网关，不能及时得到响应时返回此错误代码</td>
+</tr>
+<tr>
+<td>505</td>
+<td>HTTP Version Not Supported</td>
+<td>HTTP版本不支持</td>
+<td>服务器不支持请求中所使用的HTTP协议版本</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/5xx.png?raw=true" alt></p>
+<h2><span id="第4章-连接管理">第4章 连接管理</span></h2>
+<h3><span id="connection首部">Connection首部</span></h3>
+<p>两个相邻的HTTP应用程序会为他们共享的连接应用一组选项，Connection首部字段中有一个逗号分隔的连接标签列表，为此连接指定了一些不会传播到其他连接的选项</p>
+<h3><span id="串行连接">串行连接</span></h3>
+<p>HTTP1.0的基本特点是：</p>
+<ol>
+<li>每来一个请求就开一个TCP连接，请求完了关闭连接</li>
+<li>服务器无法在客户端没有请求的情况下，向客户端推送消息</li>
+</ol>
+<h3><span id="并行连接">并行连接</span></h3>
+<p>同时开多个tcp连接，并行处理多个http事务。tcp连接会竞争带宽，大量连接会消耗很多内存资源</p>
+<p>浏览器确实会使用并行连接，但是会将并行连接数限制为一个较小的值(通常是4个)</p>
+<h3><span id="持久连接">持久连接</span></h3>
+<ul>
+<li>HTTP1.0</li>
+</ul>
+<p>HTTP1.0设置了keepalive机制，来实现tcp连接的复用</p>
+<p>Connection首部添加Keep-Alive，同一个四元组的tcp连接可以串行处理多个http事务</p>
+<p>在HTTP响应报文中，返回一个Content-Length首部，告诉客户端单次请求的响应长度，与其他响应区分</p>
+<p>使用Connection:Close在处理完请求后关闭持久连接</p>
+<ul>
+<li>HTTP1.1</li>
+</ul>
+<p>HTTP1.1默认连接复用，除非显示加上Connection:Close属性</p>
+<p>Content-Length首部的问题是，服务端需要计算响应包长度</p>
+<p>HTTP1.1引入了chunk机制，将相应的body分块，块之间有分隔标记，使用Transfer-Encoding:chunked首部告诉客户端相应包含几个块</p>
+<h3><span id="管道化连接">管道化连接</span></h3>
+<p>HTTP1.1在持久连接上引入了pipeline机制，发送完第一个请求，不必等响应到达就可以发送下一个</p>
+<p>服务端必须按请求报文的顺序返回响应报文，即<strong>队头阻塞</strong>问题</p>
+<ul>
+<li>二进制分帧</li>
+</ul>
+<p>HTTP2为了解决<strong>队头阻塞</strong>，将TCP报文转换成二进制，并分成多个帧</p>
+<p>每对请求和响应组成一个逻辑流，每个流的不同帧都带有流ID和帧ID</p>
+<h1><span id="第二部分-http结构">第二部分 HTTP结构</span></h1>
+<h2><span id="第5章-web服务器">第5章 Web服务器</span></h2>
+<h3><span id="重定向">重定向</span></h3>
+<p>永久搬离的资源 301</p>
+<p>临时搬离的资源 303 307</p>
+<p>URL增强 重写URL，嵌入上下文，是事务间维持状态的方式 303 307</p>
+<p>负载均衡 303 307</p>
+<p>服务器关联 服务器可能会有用户的本地信息，重定向到包含客户端信息的服务器上去 303 307</p>
+<h2><span id="第6章-代理">第6章 代理</span></h2>
+<h3><span id="web的中间实体">web的中间实体</span></h3>
+<p>代理和网关的对比：代理的两端使用相同的协议，网关的两端使用不同的应用层协议，网关负责转换</p>
+<h3><span id="为什么使用代理">为什么使用代理</span></h3>
+<p>主要使用代理作以下功能使用：</p>
+<ol>
+<li>儿童过滤器：如服务器响应的成人内容进行过滤</li>
+<li>文档访问控制：验证客户端访问某个的文件需要的证书</li>
+<li>安全防火墙：提供一个防火墙保护客户端或服务器</li>
+<li>web缓存（缓存资源的副本）：对客户端响应资源的副本，节省带宽、减少网络拥堵</li>
+<li>反向代理（原始服务的替代物，能访问其他服务器，作服务器加速器使用）：反向代理伪装成原始服务器，不过与服务器不同的是反向代理还可以向其他服务器发送请求，以便实现按需定位所请求的内容！</li>
+<li>内容路由器：比如网络中实现为了一些付费用户提供更好、更快的网络速度，让请求发往缓存服务器，而没有付费的用户请求则发往更远或原始服务器！</li>
+<li>转码器（比如改变图片格式，以便更轻巧利于传输）</li>
+<li>匿名者：保护客户端隐私</li>
+</ol>
+<h2><span id="第7章-缓存">第7章 缓存</span></h2>
+<h3><span id="缓存的优点">缓存的优点</span></h3>
+<p>减少了冗余的数据传输</p>
+<p>缓解了网络的带宽瓶颈</p>
+<p>降低了原服务器的压力</p>
+<p>降低了距离时延</p>
+<h3><span id="缓存分类">缓存分类</span></h3>
+<p>私有缓存 web浏览器中有内建的私有缓存</p>
+<p>公有缓存 公有缓存是特殊的共享代理服务器，被称为缓存代理服务器</p>
+<h3><span id="副本新鲜度">副本新鲜度</span></h3>
+<p>HTTP使用文档过期和服务器再验证机制，保持已缓存数据与原服务器数据之间充分一致</p>
+<p>已缓存对象包含服务器响应主体和原始服务器响应首部，以及其他元数据，用来记录对象停留时长，访问次数</p>
+<h4><span id="文档过期">文档过期</span></h4>
+<p>通过特殊的HTTP Cache-Control首部和Expires首部，HTTP让原始服务器附加一个“过期日期”</p>
+<h4><span id="服务器再验证">服务器再验证</span></h4>
+<p>已缓存对象过期，需要进行再验证</p>
+<ul>
+<li>
+<p>验证方法</p>
+<p>If-Modified-Since首部和Last-Modified响应首部，判断原始服务器文档截止期之后是否改动</p>
+<p>If-None-Match，根绝实体标签Etag进行版本比较</p>
+</li>
+<li>
+<p>更新规则</p>
+<p>如果验证显示内容变化，缓存会获取一份新的文档副本</p>
+<p>如果没有，缓存只需要获取新的首部，包括新的过期时间</p>
+</li>
+</ul>
+<h3><span id="缓存和广告">缓存和广告</span></h3>
+<p>因为缓存的存在，导致某些靠用户点击次数收费的广告的请求未达到原始服务，从而服务器很难对用户进行了多少次点击进行计数！一种解决方案就是配置缓存，每次访问时都与原始服务器进行再验证。这样，每次访问时都会将命中推向原始服务器，但通常不会传送任何主体数据。当然，这样会降低事务处理的速度。</p>
+<h2><span id="第8章-集成电路网关-隧道及中继">第8章 集成电路：网关、隧道及中继</span></h2>
+<h3><span id="网关">网关</span></h3>
+<p>web网关在一侧使用HTTP协议，另一侧使用另一种协议</p>
+<p>使用&lt;客户端协议&gt;/&lt;服务端协议&gt;格式对网关进行描述</p>
+<p>服务器端网关 使用其他协议和服务端通信，使用HTTP协议和客户端通信</p>
+<p>客户端网关 使用其他协议和客户端通信，使用HTTP协议和服务端通信</p>
+<h3><span id="协议网关">协议网关</span></h3>
+<p>HTTP/* 服务端Web网关 将客户端HTTP请求转换为其他协议</p>
+<p>HTTP/HTTPS 服务端安全网关</p>
+<p>HTTPS/HTTP 客户端安全网关 谨慎使用，确保网关和原始服务器之间的网络是安全的</p>
+<h3><span id="资源网关">资源网关</span></h3>
+<p>应用程序服务器，将目标服务器和网关结合在一个服务器实现</p>
+<p>客户端通过HTTP与应用程序服务器通信，服务器将请求通过网关应用编程接口(Application Programming, API)发送给运行在服务器上的应用程序</p>
+<h4><span id="cgi">CGI</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/cgi.gif?raw=true" alt></p>
+<p>第一个流行的应用程序网关API是通用网关接口(Common Gateway Interface, CGI)。CGI是一个标准接口集，Web服务器可以用它来装载程序，响应HTTP请求，并收集输出数据，构造HTTP响应会送。</p>
+<p>CGI工作原理：每当客户请求CGI的时候，WEB服务器就请求操作系统生成一个新的CGI解释器进程(如php-cgi.exe)，CGI 的一个进程则处理完一个请求后退出，下一个请求来时再创建新进程。当然，这样在访问量很少没有并发的情况也行。可是当访问量增大，并发存在，这种方式就不 适合了。于是就有了fastcgi。</p>
+<h2><span id="第9章-web机器人">第9章 Web机器人</span></h2>
+<h2><span id="第10章-http-ng">第10章 HTTP-NG</span></h2>
+<h1><span id="第三部分-识别-认证与安全">第三部分 识别、认证与安全</span></h1>
+<h2><span id="第11章-客户端识别与cookie机制">第11章 客户端识别与cookie机制</span></h2>
+<p>http最初是一个匿名、无状态的请求/响应协议。服务器处理来自客户端的请求，然后向客户端回送一条响应。web服务器几乎没有什么信息可以用来判定是哪个用户发送的请求，也无法记录来访用户的请求序列。</p>
+<h3><span id="解决方案">解决方案</span></h3>
+<h4><span id="客户端ip地址">客户端IP地址</span></h4>
+<p>存在以下缺点：</p>
+<ol>
+<li>IP很可能不是客户端，而是代理</li>
+<li>多个用户公用一个IP</li>
+<li>IP地址很容易伪造</li>
+</ol>
+<h4><span id="用户登陆">用户登陆</span></h4>
+<p>服务器返回报文并添加WWW-Authorization首部，客户端下次访问带上Authorization首部，验证用户身份信息</p>
+<h4><span id="胖url">胖URL</span></h4>
+<p>把用户信息添加到url，缺点：</p>
+<ol>
+<li>暴露用户信息</li>
+<li>破坏缓存</li>
+<li>跳出跳回丢失用户信息</li>
+<li>会话非持久</li>
+</ol>
+<h4><span id="cookie">Cookie</span></h4>
+<p>是服务器发送到用户浏览器并保存在本地的一小块数据，它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上，使基于无状态的HTTP协议记录稳定的状态信息成为了可能。</p>
+<p>Cookie规范看RFC 6265，<a target="_blank" rel="noopener" href="https://www.cnblogs.com/jj1106/p/11221239.html">中文翻译</a></p>
+<h3><span id="cookie用途">Cookie用途</span></h3>
+<p>Cookie主要用于以下三个方面：</p>
+<ol>
+<li>会话状态管理（如用户登录状态、购物车、游戏分数或其它需要记录的信息）</li>
+<li>个性化设置（如用户自定义设置、主题等）</li>
+<li>浏览器行为跟踪（如跟踪分析用户行为等）</li>
+</ol>
+<p>Cookie一度用户存储客户端数据，现在逐渐被Web Storage API和IndexedDB取代</p>
+<h4><span id="web-storage-api">Web Storage API</span></h4>
+<p><strong>sessionStorage</strong> 为每一个给定的源（given origin）维持一个独立的存储区域，该存储区域在页面会话期间可用（即只要浏览器处于打开状态，包括页面重新加载和恢复）</p>
+<p><strong>localStorage</strong> 同样的功能，但是在浏览器关闭，然后重新打开后数据仍然存在</p>
+<h3><span id="cookie分类">Cookie分类</span></h3>
+<p>cookie两类会话：会话cookie和持久cookie</p>
+<p>会话cookie退出浏览器就被删除了</p>
+<h3><span id="cookie属性">Cookie属性</span></h3>
+<p>Domain: cookie的域</p>
+<p>Allh: 那些主机可以使用此cookie</p>
+<p>Path: 那些路径能使用cookie</p>
+<p>Secure: 是否在发送https报文的时候使用cookie</p>
+<p>Expires: 过期时间</p>
+<p>Name: cookie的名字</p>
+<p>Value: cookie的值</p>
+<p>HttpOnly: 通过js脚本无法读到cookie信息</p>
+<h3><span id="cookie作用域">Cookie作用域</span></h3>
+<h4><span id="相关字段">相关字段</span></h4>
+<p>Domain和Path标识定义了Cookie的作用域：即Cookie应该发送给哪些URL</p>
+<p>Domain 标识指定了哪些主机可以接受Cookie</p>
+<p>Path 标识指定了主机下的哪些路径可以接受Cookie</p>
+<h4><span id="cookie设置">Cookie设置</span></h4>
+<ul>
+<li>
+<p>域Domain</p>
+<p>Domain属性只能设置当前域名以及他的父域名，不能设置子域名，默认值是当前域名</p>
+<p>如果服务器创建Cookie时没有设置路径，那么该Cookie的路径是当前资源的访问路径</p>
+</li>
+<li>
+<p>路径Path</p>
+<p>默认Cookie的路径是当前页面的目录路径</p>
+<p>浏览器会将domain和path都相同的cookie保存在一个文件里，cookie间用*隔开</p>
+</li>
+</ul>
+<h4><span id="cookie访问">Cookie访问</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/cookie-domain-path.png?raw=true" alt></p>
+<ul>
+<li>
+<p>路径</p>
+<p>浏览器端保存的Cookie有三个，分别是Cookie1、Cookie2和Cookie3</p>
+<p>它们三个的访问路径分别为：“/Example/cookie“、”/Example/“、”Example1/cookie“</p>
+<p>浏览器访问服务器端的路径为：”<a target="_blank" rel="noopener" href="http://localhost:8080/Example/cookie/a/index.jsp%E2%80%9C">http://localhost:8080/Example/cookie/a/index.jsp“</a></p>
+<p>也就是说index.jsp页面的访问路径为：”/Example/cookie/a/“</p>
+<p>该路径包含了Cookie1和Cookie2的路径，因此在访问index.jsp时，浏览器会将Cookie1和Cookie2<br>
+发送给服务器</p>
+</li>
+<li>
+<p>域</p>
+<p>Cookie的作用域是Domain本身以及Domain下的所有子域名</p>
+</li>
+</ul>
+<h3><span id="cookie首部">Cookie首部</span></h3>
+<p>Cookie 客户端向服务器传送的cookie</p>
+<p>Set-Cookie 服务器传送cookie给客户端</p>
+<h2><span id="第12章-基本认证机制">第12章 基本认证机制</span></h2>
+<h3><span id="认证流程">认证流程</span></h3>
+<p>基本认证描述的就是用户第一次访问服务器的时候，服务器返回401状态码和WWW-Authenticate响应首部，并在首部中描述了密码编码算法和对应要使用密码的安全域</p>
+<p>然后客户端弹框，在输入用户名和密码提交后。客户端发送含有Authorization首部的get请求申请验证身份，其中首部中携带了用户名和密码糅合在一起的编码后的验证码给服务器端，</p>
+<p>如果验证通过，那么服务器返回200的响应，并以Authentication-Info首部携带相关信息，以后用户就可以不用密码访问相关文件了</p>
+<h3><span id="安全缺陷">安全缺陷</span></h3>
+<p>明文发送，即使是密文发送，也容易被解码</p>
+<p>唯一安全使用方式是与SSL配合使用</p>
+<h3><span id="代理认证">代理认证</span></h3>
+<p>代理认证：就是代替服务器向客户端发起质询/认证，与服务器端发起的质询/认证主要有几点不同：</p>
+<p>质询的时候返回的是407状态码，服务器端质询返回的首部是Proxy-Authenticate</p>
+<p>客户端认证时发送的是Proxy-Authorizatio首部，认证成功之后返回的是Proxy-Authentication-Info首部。</p>
+<h2><span id="第13章-摘要认证">第13章 摘要认证</span></h2>
+<h3><span id="单向摘要">单向摘要</span></h3>
+<p>使用常见的单向摘要函数，比如MD5对密码加密，服务端匹配客户端摘要与服务端摘要</p>
+<h3><span id="随机数防止重放攻击">随机数防止重放攻击</span></h3>
+<h2><span id="第14章-安全http">第14章 安全HTTP</span></h2>
+<h3><span id="加密技术">加密技术</span></h3>
+<h4><span id="对称密钥加密技术">对称密钥加密技术</span></h4>
+<p>编码和解码使用的密钥是同一个</p>
+<h4><span id="公开密钥加密技术">公开密钥加密技术</span></h4>
+<p>使用RSA生成两个非对称密钥Pub和Pri</p>
+<p>Pub用来对主机报文进行编码，Pri用来给主机报文解码</p>
+<p>Pub是公钥，Pri是只有主机才知道的私钥</p>
+<h3><span id="数字签名">数字签名</span></h3>
+<p>除了加解密报文之外，还可以对报文进行签名，说明是谁编写的报文，同时证明报文未被篡改过。这种技术被称为<strong>数字签名</strong>，是附加在报文上的特殊加密校验码<br>
+<img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/digital-signature.png?raw=true" alt></p>
+<h3><span id="对称加密">对称加密</span></h3>
+<p>使用对称密钥加密技术</p>
+<p>问题：密钥如何传输？密钥A的传输需要另一个密钥，循环</p>
+<h3><span id="非对称加密">非对称加密</span></h3>
+<p>存在着签名和验签与加密和解密两个过程：</p>
+<ol>
+<li>签名和验签 私钥签名，公钥验签，目的是防篡改</li>
+<li>加密和解密 公钥加密，私钥解密，防止信息被拦截偷听</li>
+</ol>
+<h3><span id="中间人攻击">中间人攻击</span></h3>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/mitm.jpeg?raw=true" alt></p>
+<p>中间人攻击(Man-in-the-MiddleAttack, MITM)，客户端和服务器交换公钥，各自把自己的公钥发给对方，但被中间人劫持了</p>
+<p>中间人C用PubC替换PubA，发给服务器，用PubC替换PubB，发给客户端</p>
+<p>客户端和服务器之间的消息，使用PubC加密，中间人可以使用PriC解密</p>
+<h3><span id="数字证书">数字证书</span></h3>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca.png?raw=true" alt><br>
+<img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/mail.png?raw=true" alt></p>
+<p>公钥的传输过程是不安全的，比如中间人攻击，需要验证收到的公钥是对方发出的，这就需要<strong>数字证书</strong></p>
+<h4><span id="服务端证书获取">服务端证书获取</span></h4>
+<p>服务器A将自己的公钥PubA+个人信息发给CA，CA用CA私钥为服务器生成一个数字证书</p>
+<h4><span id="客户端证书检查">客户端证书检查</span></h4>
+<p>客户端预先信任一些CA机构，并保存好这些CA的公钥</p>
+<p>客户端B收到后，用CA的公钥解密数字证书，拿到A的公钥，然后验证数字签名</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca-process.png?raw=true" alt></p>
+<h4><span id="根证书与ca信任链">根证书与CA信任链</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ca-chain.jpg?raw=true" alt></p>
+<p>数字证书使用CA私钥进行加密，同样需要证明CA的公钥不是伪造的</p>
+<p>解决方法是给CA颁发证书，将CA的公钥发送给上级的证书中心，颁发证书给当前的CA</p>
+<p>这样就形成了一条CA信任链，一直到根证书Root CA</p>
+<p>根证书是自验证证书，Root CA机构是公认的第三方权威机构</p>
+<h3><span id="https">HTTPS</span></h3>
+<p>HTTPS是应用层协议，默认运行在443端口，是一种安全的传输协议</p>
+<p>通过在HTTP层与运输层的TCP直接加入一个加密/身份验证层来保证安全传输</p>
+<p>HTTPS实际上就是HTTP协议和SSL/TSL协议的组合</p>
+<p>HTTP是文本协议，HTTPS是二进制协议</p>
+<h3><span id="ssltls协议">SSL/TLS协议</span></h3>
+<p>安全套接字协议(Secure Sockets Layer, SSL)，及其继任者传输层安全（Transport Layer Security, TLS）是为网络通信提供安全及数据完整性的一种安全协议</p>
+<p>TLS与SSL在传输层与应用层之间对网络连接进行加密。</p>
+<p>SSL协议位于TCP/IP协议与各种应用层协议之间，为数据通讯提供安全支持</p>
+<h4><span id="ssltls记录协议">SSL/TLS记录协议</span></h4>
+<p>建立在可靠的传输协议（如TCP）之上，为高层协议提供数据封装、压缩、加密等基本功能的支持</p>
+<h4><span id="ssltls记录协议">SSL/TLS记录协议</span></h4>
+<p>用于在实际的数据传输开始前，通讯双方进行身份认证、协商加密算法、交换加密密钥等。</p>
+<h4><span id="四次握手to-recite">四次握手[TO RECITE]</span></h4>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ssl-handshaking-0.png?raw=true" alt></p>
+<ol>
+<li>
+<p>一次握手：</p>
+<p>步骤 1：客户端通过发送 Client Hello 报文开始 SSL通信。 报文中包含客户端支持的 SSL的指定版本、 加密组件（Cipher Suite） 列表（所使用的加密算法及密钥长度等） 。</p>
+</li>
+<li>
+<p>二次握手：</p>
+<p>步骤 2：服务器可进行 SSL通信时， 会以 Server Hello 报文作为应答。 和客户端一样， 在报文中包含 SSL版本以及加密组件。 服务器的加密组件内容是从接收到的客户端加密组件内筛选出来的。</p>
+<p>步骤 3：之后服务器发送 Certificate 报文。 报文中包含公开密钥证书。</p>
+<p>步骤 4：最后服务器发送 Server Hello Done 报文通知客户端， 最初阶段的 SSL握手协商部分结束。</p>
+</li>
+<li>
+<p>三次握手：</p>
+<p>步骤 5：客户端以 Client Key Exchange 报文作为回应。 报文中包含通信加密中使用的一种被称为 Pre-mastersecret 的随机密码串。 该报文已用步骤 3 中的公开密钥进行加密。</p>
+<p>步骤 6：接着客户端继续发送 Change Cipher Spec 报文。 该报文会提示服务器， 在此报文之后的通信会采用Pre-master secret 密钥加密。</p>
+<p>步骤 7：客户端发送 Finished 报文。 该报文包含连接至今全部报文的整体校验值。 这次握手协商是否能够成功， 要以服务器是否能够正确解密该报文作为判定标准。</p>
+</li>
+<li>
+<p>四次握手：</p>
+<p>步骤 8：服务器同样发送 Change Cipher Spec 报文。</p>
+<p>步骤 9：服务器同样发送 Finished 报文。</p>
+<p>总的来说，SSL会话的建立完成了以下几个工作：</p>
+<p>交换协议版本号，选择一个通信双方都支持的加密方式；对两端实现身份验证；密钥交换。</p>
+</li>
+</ol>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/http-definitive-guide/ssl-handshaking.png?raw=true" alt></p>
+<h1><span id="第四部分-实体-编码和国际化">第四部分 实体、编码和国际化</span></h1>
+<h2><span id="第15章-实体和编码">第15章 实体和编码</span></h2>
+<p>服务器通过HTTP协议的Content-Type首部中的charset参数和Content-Language首部告知客户端文档的字母表和语言。</p>
+<h3><span id="实体摘要">实体摘要</span></h3>
+<p>发送方可以在生成初始的主体时，生成一个数据的校验和。遮掩接收方就可以通过检查这个校验和来捕获所有意外的实体修改了</p>
+<p>Content-MD5首部发送对实体主体运行MD5摘要算法的结果</p>
+<h3><span id="媒体类型和字符集">媒体类型和字符集</span></h3>
+<p>Content-Type 说明的是原始实体主体的MIME类型</p>
+<p>参数charset表示字符集，说明把实体中的比特转换为文本文件中的字符方法</p>
+<h2><span id="第16章-国际化">第16章 国际化</span></h2>
+<p>Content-Language 客户端文档的语言</p>
+<p>Accept-Language 客户端能优先接收的语言</p>
+<h2><span id="第17章-内容协商与转码">第17章 内容协商与转码</span></h2>
+<h1><span id="第五部分-内容发布与分发">第五部分 内容发布与分发</span></h1>
+<h2><span id="第18章-web主机托管">第18章 Web主机托管</span></h2>
+<h2><span id="第19章-发布系统">第19章 发布系统</span></h2>
+<h2><span id="第20章-重定向与负载均衡">第20章 重定向与负载均衡</span></h2>
+<h2><span id="第21章-日志记录与使用情况跟踪">第21章 日志记录与使用情况跟踪</span></h2>
+<h1><span id="第六部分-附录">第六部分 附录</span></h1>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/工程/white-hat-web-security/" data-toggle="tooltip" data-placement="top" title="「白帽子讲Web安全」学习笔记[TODO]">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/工程/art-of-linux-kernel-design/" data-toggle="tooltip" data-placement="top" title="「Linux内核设计的艺术」学习笔记[TODO]">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">前言</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">第一部分 HTTP基础</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.1.</span> <span class="toc-nav-text">第1章 HTTP概述</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.1.</span> <span class="toc-nav-text">URI</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.2.</span> <span class="toc-nav-text">事务</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.1.3.</span> <span class="toc-nav-text">web结构组件</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.2.</span> <span class="toc-nav-text">第2章 URL与资源</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.2.1.</span> <span class="toc-nav-text">url编码</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.3.</span> <span class="toc-nav-text">第3章 HTTP报文</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.3.1.</span> <span class="toc-nav-text">方法</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.3.2.</span> <span class="toc-nav-text">状态码</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.3.2.1.</span> <span class="toc-nav-text">2xx 成功状态码</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.3.2.2.</span> <span class="toc-nav-text">3xx 重定向状态码</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.3.2.3.</span> <span class="toc-nav-text">4xx 客户端错误</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">2.3.2.4.</span> <span class="toc-nav-text">5xx服务端错误</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">2.4.</span> <span class="toc-nav-text">第4章 连接管理</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.4.1.</span> <span class="toc-nav-text">Connection首部</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.4.2.</span> <span class="toc-nav-text">串行连接</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.4.3.</span> <span class="toc-nav-text">并行连接</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.4.4.</span> <span class="toc-nav-text">持久连接</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">2.4.5.</span> <span class="toc-nav-text">管道化连接</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">第二部分 HTTP结构</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.1.</span> <span class="toc-nav-text">第5章 Web服务器</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.1.1.</span> <span class="toc-nav-text">重定向</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.2.</span> <span class="toc-nav-text">第6章 代理</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.1.</span> <span class="toc-nav-text">web的中间实体</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.2.2.</span> <span class="toc-nav-text">为什么使用代理</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.3.</span> <span class="toc-nav-text">第7章 缓存</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.3.1.</span> <span class="toc-nav-text">缓存的优点</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.3.2.</span> <span class="toc-nav-text">缓存分类</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.3.3.</span> <span class="toc-nav-text">副本新鲜度</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.3.3.1.</span> <span class="toc-nav-text">文档过期</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.3.3.2.</span> <span class="toc-nav-text">服务器再验证</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.3.4.</span> <span class="toc-nav-text">缓存和广告</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.4.</span> <span class="toc-nav-text">第8章 集成电路：网关、隧道及中继</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.4.1.</span> <span class="toc-nav-text">网关</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.4.2.</span> <span class="toc-nav-text">协议网关</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">3.4.3.</span> <span class="toc-nav-text">资源网关</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">3.4.3.1.</span> <span class="toc-nav-text">CGI</span></a></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.5.</span> <span class="toc-nav-text">第9章 Web机器人</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">3.6.</span> <span class="toc-nav-text">第10章 HTTP-NG</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">第三部分 识别、认证与安全</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.1.</span> <span class="toc-nav-text">第11章 客户端识别与cookie机制</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.</span> <span class="toc-nav-text">解决方案</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.1.</span> <span class="toc-nav-text">客户端IP地址</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.2.</span> <span class="toc-nav-text">用户登陆</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.3.</span> <span class="toc-nav-text">胖URL</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.1.4.</span> <span class="toc-nav-text">Cookie</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.2.</span> <span class="toc-nav-text">Cookie用途</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.2.1.</span> <span class="toc-nav-text">Web Storage API</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.3.</span> <span class="toc-nav-text">Cookie分类</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.4.</span> <span class="toc-nav-text">Cookie属性</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.5.</span> <span class="toc-nav-text">Cookie作用域</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.5.1.</span> <span class="toc-nav-text">相关字段</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.5.2.</span> <span class="toc-nav-text">Cookie设置</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.1.5.3.</span> <span class="toc-nav-text">Cookie访问</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.1.6.</span> <span class="toc-nav-text">Cookie首部</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.2.</span> <span class="toc-nav-text">第12章 基本认证机制</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.1.</span> <span class="toc-nav-text">认证流程</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.2.</span> <span class="toc-nav-text">安全缺陷</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.2.3.</span> <span class="toc-nav-text">代理认证</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.3.</span> <span class="toc-nav-text">第13章 摘要认证</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.3.1.</span> <span class="toc-nav-text">单向摘要</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.3.2.</span> <span class="toc-nav-text">随机数防止重放攻击</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">4.4.</span> <span class="toc-nav-text">第14章 安全HTTP</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.1.</span> <span class="toc-nav-text">加密技术</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.1.1.</span> <span class="toc-nav-text">对称密钥加密技术</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.1.2.</span> <span class="toc-nav-text">公开密钥加密技术</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.2.</span> <span class="toc-nav-text">数字签名</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.3.</span> <span class="toc-nav-text">对称加密</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.4.</span> <span class="toc-nav-text">非对称加密</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.5.</span> <span class="toc-nav-text">中间人攻击</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.6.</span> <span class="toc-nav-text">数字证书</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.6.1.</span> <span class="toc-nav-text">服务端证书获取</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.6.2.</span> <span class="toc-nav-text">客户端证书检查</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.6.3.</span> <span class="toc-nav-text">根证书与CA信任链</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.7.</span> <span class="toc-nav-text">HTTPS</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">4.4.8.</span> <span class="toc-nav-text">SSL&#x2F;TLS协议</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.8.1.</span> <span class="toc-nav-text">SSL&#x2F;TLS记录协议</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.8.2.</span> <span class="toc-nav-text">SSL&#x2F;TLS记录协议</span></a></li><li class="toc-nav-item toc-nav-level-4"><a class="toc-nav-link"><span class="toc-nav-number">4.4.8.3.</span> <span class="toc-nav-text">四次握手[TO RECITE]</span></a></li></ol></li></ol></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">5.</span> <span class="toc-nav-text">第四部分 实体、编码和国际化</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.1.</span> <span class="toc-nav-text">第15章 实体和编码</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.1.</span> <span class="toc-nav-text">实体摘要</span></a></li><li class="toc-nav-item toc-nav-level-3"><a class="toc-nav-link"><span class="toc-nav-number">5.1.2.</span> <span class="toc-nav-text">媒体类型和字符集</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.2.</span> <span class="toc-nav-text">第16章 国际化</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">5.3.</span> <span class="toc-nav-text">第17章 内容协商与转码</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">6.</span> <span class="toc-nav-text">第五部分 内容发布与分发</span></a><ol class="toc-nav-child"><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">6.1.</span> <span class="toc-nav-text">第18章 Web主机托管</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">6.2.</span> <span class="toc-nav-text">第19章 发布系统</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">6.3.</span> <span class="toc-nav-text">第20章 重定向与负载均衡</span></a></li><li class="toc-nav-item toc-nav-level-2"><a class="toc-nav-link"><span class="toc-nav-number">6.4.</span> <span class="toc-nav-text">第21章 日志记录与使用情况跟踪</span></a></li></ol></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">7.</span> <span class="toc-nav-text">第六部分 附录</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#net" title="net">net</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 
+                    2021 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    追寻梦之碎片 
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://blog.soaringhawkcheng.tech/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://blog.soaringhawkcheng.tech/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>

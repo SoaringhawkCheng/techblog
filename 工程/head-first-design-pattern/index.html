@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="google-site-verification" content="xBT4GhYoi5qRD5tr338pgPM5OWHHIDR6mNg1a3euekI" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="keyword"  content="">
+    <link rel="shortcut icon" href="/img/ironman-draw.png">
+    <!-- Place this tag in your head or just before your close body tag. -->
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <title>
+        
+          「Head First设计模式」学习笔记 - 沙罗双树园 | 追寻梦之碎片
+        
+    </title>
+
+    <link rel="canonical" href="https://blog.soaringhawkcheng.tech/工程/head-first-design-pattern/">
+
+    <!-- Bootstrap Core CSS -->
+    
+<link rel="stylesheet" href="/css/bootstrap.min.css">
+
+
+    <!-- Custom CSS --> 
+    
+<link rel="stylesheet" href="/css/beantech.min.css">
+
+
+    
+<link rel="stylesheet" href="/css/donate.css">
+
+    
+    <!-- Pygments Highlight CSS -->
+    
+<link rel="stylesheet" href="/css/highlight.css">
+
+
+    
+<link rel="stylesheet" href="/css/widget.css">
+
+
+    
+<link rel="stylesheet" href="/css/rocket.css">
+
+
+    
+<link rel="stylesheet" href="/css/signature.css">
+
+
+    
+<link rel="stylesheet" href="/css/toc.css">
+
+
+    <!-- Custom Fonts -->
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- Hux change font-awesome CDN to qiniu -->
+    <link href="https://cdn.staticfile.org/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <!-- Hux Delete, sad but pending in China
+    <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/
+    css'>
+    -->
+
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- ga & ba script hoook -->
+    <script></script>
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+
+<!-- hack iOS CSS :active style -->
+<body ontouchstart="">
+	<!-- Modified by Yu-Hsuan Yen -->
+<!-- Post Header -->
+<style type="text/css">
+    header.intro-header{
+        
+            background-image: url('/img/vintage/article.jpg')
+            /*post*/
+        
+    }
+    
+</style>
+
+<header class="intro-header" >
+    <!-- Signature -->
+    <div id="signature">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                
+                    <div class="post-heading">
+                        <div class="tags">
+                            
+                              <a class="tag" href="/tags/#software" title="software">software</a>
+                            
+                        </div>
+                        <h1>「Head First设计模式」学习笔记</h1>
+                        <h2 class="subheading"></h2>
+                        <span class="meta">
+                            Posted by 追寻梦之碎片 on
+                            2019-05-24
+                        </span>
+                    </div>
+                
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+	
+    <!-- Navigation -->
+<nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header page-scroll">
+            <button type="button" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">沙罗双树园</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <!-- Known Issue, found by Hux:
+            <nav>'s height woule be hold on by its content.
+            so, when navbar scale out, the <nav> will cover tags.
+            also mask any touch event of tags, unfortunately.
+        -->
+        <div id="huxblog_navbar">
+            <div class="navbar-collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="/">Home</a>
+                    </li>
+
+                    
+
+                        
+                        <li>
+                            <a href="/about/">About</a>
+                        </li>
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/archive/">Archives</a>
+                        </li>
+                        
+                    
+
+                        
+                    
+
+                        
+                        <li>
+                            <a href="/tags/">Tags</a>
+                        </li>
+                        
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+<script>
+    // Drop Bootstarp low-performance Navbar
+    // Use customize navbar with high-quality material design animation
+    // in high-perf jank-free CSS3 implementation
+    var $body   = document.body;
+    var $toggle = document.querySelector('.navbar-toggle');
+    var $navbar = document.querySelector('#huxblog_navbar');
+    var $collapse = document.querySelector('.navbar-collapse');
+
+    $toggle.addEventListener('click', handleMagic)
+    function handleMagic(e){
+        if ($navbar.className.indexOf('in') > 0) {
+        // CLOSE
+            $navbar.className = " ";
+            // wait until animation end.
+            setTimeout(function(){
+                // prevent frequently toggle
+                if($navbar.className.indexOf('in') < 0) {
+                    $collapse.style.height = "0px"
+                }
+            },400)
+        }else{
+        // OPEN
+            $collapse.style.height = "auto"
+            $navbar.className += " in";
+        }
+    }
+</script>
+
+
+    <!-- Main Content -->
+    <!-- Modify by Yu-Hsuan Yen -->
+
+<!-- Post Content -->
+<article>
+    <div class="container">
+        <div class="row">
+
+            <!-- Post Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                post-container">
+
+                <blockquote>
+<p>书籍豆瓣链接：<a target="_blank" rel="noopener" href="https://book.douban.com/subject/2243615/">《Head First设计模式》</a></p>
+<p>开始学习时间：5-24</p>
+<p>预计完成时间：6-9</p>
+<p>实际完成时间：6-6</p>
+</blockquote>
+<h1><span id="设计基础">设计基础</span></h1>
+<ul>
+<li>
+<p>继承</p>
+<pre><code>  通过扩展一个已有的类，并继承改类的属性和行为，来创建一个新的类
+</code></pre>
+</li>
+<li>
+<p>封装</p>
+<pre><code>  封装就是把抽象的数据和对数据进行的操作封装在一起，数据被保存在内部，程序的其他部分只有通过被授权的操作（成员方法）才能对数据进行操作。
+</code></pre>
+</li>
+<li>
+<p>多态</p>
+<pre><code>  在判断引用对象的实际类型，根据其实际的类型调用相应的方法。分为静多态(编译时多态)和动多态(运行时多态)
+</code></pre>
+</li>
+<li>
+<p>抽象</p>
+<pre><code>  定义一个类的时候，实际上就是把一类事物的公有的属性和行为提取出来，形成一个物理模型
+</code></pre>
+</li>
+<li>
+<p>抽象类和接口</p>
+<pre><code>  【抽象类】
+  抽象方法只作声明、而不包含实现
+  不能被实例化
+  接口不能被实例化
+  接口只能包含方法声明
+  具体派生类必须覆盖基类的抽象方法
+  抽象派生类可以覆盖基类的抽象方法，如果不覆盖，则其具体派生类必须覆盖它们
+  【接口】
+  接口不能被实例化
+  接口只能包含方法声明
+  接口的成员包括方法、属性、索引器和事件
+  接口中不能包含常量、字段(域)、构造函数、析构函数、静态成员
+  【相同点】
+  都可以被继承
+  都不能被实例化
+  都可以包含方法声明
+  派生类必须实现未实现的方法
+  【不同点】
+  抽象类可以有构造方法，接口中不能有构造方法
+  抽象类中可以有普通成员变量，接口中没有普通成员变量
+  抽象类中可以包含静态方法，接口中不能包含静态方法
+  一个类可以实现多个接口，但只能继承一个抽象类
+  接口可以被多重实现，抽象类只能被单一继承
+  抽象类实现接口，可以把接口中方法映射到抽象类中作为抽象方法，而不是实现
+</code></pre>
+</li>
+</ul>
+<h1><span id="uml类图">UML类图</span></h1>
+<ul>
+<li>
+<p>泛化关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_generalize.png?raw=true" alt></p>
+<p>继承类和接口，java中通过extends实现</p>
+</li>
+<li>
+<p>实现关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_realization.png?raw=true" alt></p>
+<p>实现接口，java中使用implements表示</p>
+</li>
+<li>
+<p>依赖关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_dependency.png?raw=true" alt>	<br>
+java中表现为，局部变量、方法中的参数和静态方法调用</p>
+</li>
+<li>
+<p>关联关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_association.png?raw=true" alt></p>
+<p>java中使用成员变量实现</p>
+</li>
+<li>
+<p>聚合关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_aggregation.png?raw=true" alt></p>
+<p>整体和部分弱依赖，部分生命周期不依赖整体，比如指针成员变量</p>
+</li>
+<li>
+<p>组合关系</p>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/class_composition.png?raw=true" alt></p>
+<p>整体和部分强依赖，部分生命周期依赖整体，如普通成员变量</p>
+</li>
+</ul>
+<h1><span id="设计原则">设计原则</span></h1>
+<ul>
+<li>
+<p>将应用中可能变化之处，把他们独立出来</p>
+<pre><code>  将会变化的部分取出并封装起来，以便以后可以轻易地改动或扩充此部分，而不影响不需要变化的其他部分
+</code></pre>
+</li>
+<li>
+<p>针对接口编程，而不是针对实现编程</p>
+<pre><code>  通过接口来调用一个类及其方法，而不是直接建立类实体来调用类
+</code></pre>
+</li>
+<li>
+<p>多用组合，少用继承</p>
+<pre><code>  组合的意思就是把你需要的东西组合在一个类里面，这个类并不需要继承任何父类，也可以提供想要的行为方法。利用继承设计子类的行为，是在编译时静态决定的，而且所有的子类都会继承到相同的行为。利用组合(composition)和委托(delegation)的做法扩展对象的可以在运行时动态地进行扩展。
+</code></pre>
+</li>
+<li>
+<p>未来交互对象之间的松耦合设计而努力</p>
+<pre><code>  松耦合的设计之所以能让我们建立有弹性的OO系统，能够应对变化，是因为对象之间的互相依赖降到了最低
+</code></pre>
+</li>
+<li>
+<p>开放-关闭原则 类应该对扩展开发，对修改封闭</p>
+<pre><code>  我们的目标是允许类容易扩展，在不修改现有代码的情况下，就可搭配新的行为。这样的设计具有弹性可以应对改变，可以接受新的功能来应对改变的需求
+</code></pre>
+</li>
+<li>
+<p>依赖倒置原则</p>
+<pre><code>  要依赖抽象，不要依赖具体的类
+  PizzaStore是个高层组件，Pizza是低层组件，不能让高层组件依赖底层组件，两者都应该依赖抽象
+</code></pre>
+</li>
+<li>
+<p>“最少知识”原则</p>
+<pre><code>  减少对象之间的交互
+  
+  就任何对象而言，在该对象的方法内，我们应该调用属于以下范围的方法：
+  	该对象本身
+  	被当做方法的参数而传递进来的对象(鸭子模型)
+  	此方法所创建的或实例化的任何对象
+  	对象的任何组件(HAS-A)
+</code></pre>
+</li>
+<li>
+<p>好莱坞原则</p>
+<pre><code>  别调用我们，我们会调用你们
+  
+  高层组件调用低层组件，低层组件绝对不可以直接调用高层组件
+</code></pre>
+</li>
+<li>
+<p>单一责任原则</p>
+<pre><code>  一个类或者模块应该有且只有一个改变的原因
+  
+  当一个模板或一个类被设计成只支持一组相关的功能时，我们说它具有高内聚，反之，当被设计成一组不相关的功能时，我们说它具有低内聚。“内聚”是一个比单一责任原则更普遍的概念，但两者其实关系很密切，遵守这个原则的类很容易具有高内聚，比背负很多责任的低内聚类更容易维护
+</code></pre>
+</li>
+</ul>
+<h1><span id="设计模式">设计模式</span></h1>
+<ul>
+<li>
+<p>策略模式</p>
+<pre><code>  定义算法族，分别封装起来，让它们之间可以相互替换，让算法的变化独立于使用算法的客户
+</code></pre>
+</li>
+<li>
+<p>观察者模式</p>
+<pre><code>  定义了对象之间的一对多依赖，当一个对象改变状态时，它的所有依赖者都会收到通知并自动更新
+</code></pre>
+</li>
+<li>
+<p>装饰者模式</p>
+<pre><code>  继承的问题：类数量爆炸，设计死板，以及基类加入的新功能并不适用于所有的子类
+  装饰器动态地将责任附加到对象上。若要扩展功能，装饰者提供了比继承更有弹性的替代方案
+  利用继承达到“类型匹配”，而不是利用继承获得“行为”，行为来自装饰者和基础组件，或与其他装饰者之间的组合关系
+</code></pre>
+</li>
+<li>
+<p>工厂方法模式</p>
+<pre><code>  定义了一个创建对象的接口，但由子类决定要实例化的类是哪一个，工厂方法让类把实例化推迟到子类。
+  简单工厂把全部的事情在一个地方处理完了，工厂方法确实创建一个框架，让子类决定要如何实现。比如说，在工厂方法中，orderPizza方法提供了一般的框架，以便创建比萨，orderPizza方法依赖工厂方法创建具体的类，并制造出实际的比萨。简单工厂的做法，可以将对象的创建封装起来，但是简单工厂不具备工厂方法的弹性，不能变更正在创建的产品。
+  
+  【简单工厂模式】
+  使用一个工厂类来创建产品，客户端避免了直接创建产品对象的责任
+  优点：
+  	简单工厂包含必要的判断逻辑，简单工厂实现了对象的创建和使用的分离
+  	客户端无需知道所创建的具体产品类的类名，只需要具体产品类对应的引用
+  	在不修改任何客户端代码的情况下更换和增加新的具体产品类
+  缺点：
+  	工厂类的职责过重，一旦出问题，整个系统都要出问题
+  	在添加新的类的时候，简单工厂类就要修改，违反了开放——封闭原则
+  	简单工厂的静态方法，使得工厂角色无法形成基于继承的等级结构
+  【工厂方法模式】
+  优点：
+  	增加修改新类不用修改代码，只需要增加对应的工厂就好，完全符合开放——封闭性原则
+  	创建对象的细节完全封装在具体工厂内部，具体工厂都继承了自己的父类，完美的体现了多态性
+  缺点：
+  	增加新的产品，需要增加新的工厂类，会带来额外的开销 
+  	抽象层的加入使得理解程度加大
+</code></pre>
+</li>
+<li>
+<p>抽象工厂模式</p>
+<pre><code>  	抽象工厂提供一个接口，用于创建相关或依赖对象的家族，而不需要明确指定具体类
+  	
+  	在工厂方法模式中，我们的具体创建者每次使用都只能创建一个同类型的对象
+  	假如我们现在需要的是多个不同类型的对象，工厂方法就满足不了需求了
+  	这时我们可以把多个工厂方法组合到一个类，这就是抽象工厂模式
+  	它就是专门用来创建多个产品，也可以说是创建产品家族的
+</code></pre>
+</li>
+<li>
+<p>单件模式</p>
+<pre><code>  	确保一个类只有一个实例，并提供一个全局访问点
+
+  	【双重检查加锁】
+  	创建一个对象的过程是这样的：
+  		memory = allocate() # 分配对象的内存空间
+  		ctorInstance(memory) # 初始化对象
+  		instance = memory # 设置instance指向刚分配的内存地址
+  	编译器和处理器有可能为了优化程序性能而对指令序列进行重排序
+  		memory = allocate() # 分配对象的内存空间
+  		ctorInstance(memory) # 初始化对象
+  		instance = memory # 设置instance指向刚分配的内存地址
+  	多线程情况下，其他线程会持有一个还未初始化的对象，volatile变量禁止重排序
+</code></pre>
+</li>
+<li>
+<p>命令模式</p>
+<pre><code>  	命令模式是为了解决命令的请求者和命令的实现者之间的耦合关系。将“请求”封装成对象，以便使用不同的请求，队列或者日志来参数化其他对象。
+
+  	抽象命令接口Command: 定义命令的统一接口
+  	public interface Command&#123;
+  		void execute();
+  	&#125;
+  	
+  	具体的命令对象ConcreteCommand: Command接口的实现者，用来执行具体的命令
+  	public class LightOnCommand implements Command&#123;
+  		private Light light;
+  		
+  		public LightOnCommand(Light light)&#123;
+  			this.light = light;
+  		&#125;
+  		
+  		public void execute()&#123;
+  			light.lightOn();
+  		&#125;
+  	&#125;
+  	
+  	传递命令对象Invoker:  命令的请求/请求者，对各个命令进行组装控制			public class XiaoAi&#123;
+  		private Command command;
+  		
+  		public void setCommand(Command command)&#123;
+  			this.command = command;
+  		&#125;
+  		
+  		public void doCommand()&#123;
+  			command.execute();
+  		&#125;
+  	&#125;
+
+  	接受者对象Receiver: 命令的实际执行者
+  	public class Light&#123;
+  		public void lightOn()&#123;
+  			System.out.println(&quot;灯打开了！&quot;);
+  		&#125;
+  	&#125;
+
+  	客户端对象Client: 创建具体命令的对象并且设置命令对象的接受者
+  	public class Client&#123;
+  		public static void main(string[] args)&#123;
+  			// 创建Invoker
+  			XiaoAi xiaoAi = new XiaoAi();
+  			// 创建Receiver
+  			Light light = new Light();
+  			// 创建ConcreteCommand
+  			LightOnCommand lightOnCommand = new LightOnCommand(light)
+  			// Invoker接受Command
+  			xiaoAi.setCommand(lightOnCommand);
+  			// Invoker执行Command
+  			xiaoAi.doCommand();
+  		&#125;
+  	&#125;
+</code></pre>
+</li>
+<li>
+<p>适配器模式</p>
+<pre><code>  	将一个类的接口，转换成客户期望的另一个接口，适配器让原本接口不兼容的类可以合作无间
+  	适配器分为：类适配器和对象适配器
+  	对象适配器：使用对象组合，以修改的接口包装被适配者，被适配者的任何子类，都可以搭配着适配者使用
+  	类适配器：类适配器不是使用组合来适配被适配者，而是继承被适配者和目标类
+  	
+  	适配器、外观、装饰者和代理模式的区别：
+  		适配器模式：包装另一个对象，并提供不同的接口。
+  		外观模式：包装许多对象，以简化他们的接口。
+  		装饰者模式：包装另一个对象，并提供额外的行为。
+  		代理模式：包装另一个对象，并控制对它的访问。
+</code></pre>
+</li>
+<li>
+<p>外观模式</p>
+<pre><code>  	提供了一个统一的接口，用来访问子系统中的一群接口，外观定义了一个高层接口，让子系统更容易使用
+  	外观模式的目的是不是给予子系统添加新的功能接口，而是为了让外部减少与子系统内多个模块的交互，松散耦合，从而让外部能够更简单地使用子系统
+  	外观模式的本质是：封装交互，简化调用
+</code></pre>
+</li>
+<li>
+<p>模板方法模式</p>
+<pre><code>  	模板方法模式在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法的某些步骤。
+  	
+  	钩子是一种被声明在抽象类中的方法，但只要空的或者默认的实现。钩子的存在，可以让子类有能力对算法的不同点进行挂钩。
+  	
+  	模板方法、策略和工厂方法
+  	模板方法，子类在不改变算法结构的情况下，重新定义算法的某些步骤
+  	策略，子类决定如何实现算法，算法步骤不要求相同
+  	工厂方法，具体工厂类决定如何实例化哪个具体产品类
+</code></pre>
+</li>
+<li>
+<p>迭代器模式</p>
+<pre><code>  	提供一种方法顺序访问一个聚合对象中的各个元素，而又不暴露其内部的表示
+  	迭代器提供统一的接口，针对接口编程，而不针对实现编程
+</code></pre>
+</li>
+<li>
+<p>组合模式</p>
+<pre><code>  	允许你将对象组合成树形结构来表现“整体/部分”层次结构。组合能让客户以一致的方式处理个别对象以及对象组合
+  	
+  	模式对比：
+  	策略 封装可以互换的行为，并使用委托决定使用哪一个
+  	适配器 改变一个或多个类的接口
+  	迭代器 提供一个方式来遍历集合，而无须暴露集合的实现
+  	外观 简化一群类的接口
+  	组合 客户可以将对象的集合以及个别的对象一视同仁
+  	观察者 当某个状态改变时，允许一群对象能被通知到
+</code></pre>
+</li>
+<li>
+<p>状态模式</p>
+<pre><code>  	定义一个state接口，在这个接口内，糖果机的每个动作都有一个对应的方法
+  	为机器中的每个状态实现状态类，这些类将负责在对应的状态下进行机器的行为
+  	将动作委托到状态类
+  	
+  	当状态转换是固定的时候，适合放在context中；转换更动态的时候，通常会放在状态类中
+</code></pre>
+</li>
+<li>
+<p>代理模式</p>
+<pre><code>  	为其他对象提供一种代理以控制对这个对象的访问，在某些情况下，一个对象不适合或者不能直接引用另一个对象，而代理对象可以在客户端和目标对象之间起到中介的作用
+  	
+  	抽象角色：通过接口或抽象类生命
+  	
+  	代理角色：
+  	
+  	真实角色：
+  	
+  	RMI(remote method invocation, 远程方法调用)，客户辅助对象成为stub(桩)，服务辅助对象成为skeleton(骨架) 
+  	skeleton对数据进行序列化，stub对数据进行反序列化
+</code></pre>
+</li>
+</ul>
+<p><img src="https://github.com/SoaringhawkCheng/blog/blob/master/source/_posts/head-first-design-pattern/2.jpg?raw=true" alt></p>
+<ul>
+<li>
+<p>复合模式</p>
+<pre><code>  	模型-视图-控制器(model view controll, MVC)
+  	模型：实现了观察者模式，当状态改变时，可以让模型完全独立于视图和控制器。同一个模型可以使用不同的视图，同一模型可以使用不同的视图
+  	视图：显示包括了窗口、面板、按钮、文本标签等。每个显示组件不是组合节点，就是叶节点。当控制器告诉视图更新时，只需要告诉视图最顶层的组件，组合会处理其余的事。
+  	控制器：视图和控制器实现了策略模式，视图是一个对象，可以被调整使用不同的策略，而控制器提供了策略。
+</code></pre>
+</li>
+</ul>
+<h1><span id="其他模式">其他模式</span></h1>
+<blockquote>
+<p>留到看《设计模式》再看</p>
+</blockquote>
+<ul>
+<li>
+<p>桥接模式</p>
+</li>
+<li>
+<p>生成器</p>
+</li>
+<li>
+<p>责任链</p>
+</li>
+<li>
+<p>蝇量模式</p>
+</li>
+<li>
+<p>解释器</p>
+</li>
+<li>
+<p>中介者</p>
+</li>
+<li>
+<p>备忘录</p>
+</li>
+<li>
+<p>原型</p>
+</li>
+<li>
+<p>访问者</p>
+</li>
+</ul>
+
+                
+
+                <hr>
+                <!-- Pager -->
+                <ul class="pager">
+                    
+                        <li class="previous">
+                            <a href="/工程/python-web-guide-notes/" data-toggle="tooltip" data-placement="top" title="「python-web-guide」学习笔记[TODO]">&larr; Previous Post</a>
+                        </li>
+                    
+                    
+                        <li class="next">
+                            <a href="/工程/learn-architecture-from-scratch/" data-toggle="tooltip" data-placement="top" title="「从零开始学架构」学习笔记[TODO]">Next Post &rarr;</a>
+                        </li>
+                    
+                </ul>
+
+                <br>
+
+                <!--打赏-->
+                
+                <!--打赏-->
+
+                <br>
+                <!--分享-->
+                
+                    <div class="social-share"  data-wechat-qrcode-helper="" align="center"></div>
+                    <!--  css & js -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+                
+                <!--分享-->
+                <br>                       
+                
+                <!-- require APlayer -->
+                
+
+                <!-- duoshuo Share start -->
+                
+                <!-- 多说 Share end-->
+
+                <!-- 多说评论框 start -->
+                
+                <!-- 多说评论框 end -->
+
+                <!-- disqus comment start -->
+                
+                <!-- disqus comment end -->
+
+                
+
+            </div>
+            
+            <!-- Tabe of Content -->
+            <!-- Table of Contents -->
+
+  
+    <style>
+      span.toc-nav-number{
+        display: none
+      }
+    </style>
+  
+    
+      <aside id="sidebar">
+        <div id="toc" class="toc-article">
+        <strong class="toc-title">Contents</strong>
+        
+          <ol class="toc-nav"><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">1.</span> <span class="toc-nav-text">设计基础</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">2.</span> <span class="toc-nav-text">UML类图</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">3.</span> <span class="toc-nav-text">设计原则</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">4.</span> <span class="toc-nav-text">设计模式</span></a></li><li class="toc-nav-item toc-nav-level-1"><a class="toc-nav-link"><span class="toc-nav-number">5.</span> <span class="toc-nav-text">其他模式</span></a></li></ol>
+        
+        </div>
+      </aside>
+    
+
+                
+            <!-- Sidebar Container -->
+            <div class="
+                col-lg-8 col-lg-offset-2
+                col-md-10 col-md-offset-1
+                sidebar-container">
+
+                <!-- Featured Tags -->
+                
+                <section>
+                    <!-- no hr -->
+                    <h5><a href="/tags/">FEATURED TAGS</a></h5>
+                    <div class="tags">
+                       
+                          <a class="tag" href="/tags/#software" title="software">software</a>
+                        
+                    </div>
+                </section>
+                
+
+                <!-- Friends Blog -->
+                
+                <hr>
+                <h5>FRIENDS</h5>
+                <ul class="list-inline">
+
+                    
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+</article>
+
+
+
+
+
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+<!-- anchor-js, Doc:http://bryanbraun.github.io/anchorjs/ -->
+<script>
+    async("https://cdn.bootcss.com/anchor-js/1.1.1/anchor.min.js",function(){
+        anchors.options = {
+          visible: 'hover',
+          placement: 'left',
+          icon: 'ℬ'
+        };
+        anchors.add().remove('.intro-header h1').remove('.subheading').remove('.sidebar-container h5');
+    })
+</script>
+<style>
+    /* place left on bigger screen */
+    @media all and (min-width: 800px) {
+        .anchorjs-link{
+            position: absolute;
+            left: -0.75em;
+            font-size: 1.1em;
+            margin-top : -0.1em;
+        }
+    }
+</style>
+
+
+
+    <!-- Footer -->
+    <!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                <ul class="list-inline text-center">
+                
+                
+                
+
+                
+
+                
+
+                
+
+                
+
+                </ul>
+                <p class="copyright text-muted">
+                    Copyright &copy; 
+                    2021 
+                    <span style="display: inline-block; margin: 0 5px;">
+                        <i class="fa fa-heart"></i>
+                    </span> 
+                    追寻梦之碎片 
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- jQuery -->
+
+<script src="/js/jquery.min.js"></script>
+
+
+<!-- Bootstrap Core JavaScript -->
+
+<script src="/js/bootstrap.min.js"></script>
+
+
+<!-- Custom Theme JavaScript -->
+
+<script src="/js/hux-blog.min.js"></script>
+
+
+
+<!-- async load function -->
+<script>
+    function async(u, c) {
+      var d = document, t = 'script',
+          o = d.createElement(t),
+          s = d.getElementsByTagName(t)[0];
+      o.src = u;
+      if (c) { o.addEventListener('load', function (e) { c(null, e); }, false); }
+      s.parentNode.insertBefore(o, s);
+    }
+</script>
+
+<!-- 
+     Because of the native support for backtick-style fenced code blocks 
+     right within the Markdown is landed in Github Pages, 
+     From V1.6, There is no need for Highlight.js, 
+     so Huxblog drops it officially.
+
+     - https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0  
+     - https://help.github.com/articles/creating-and-highlighting-code-blocks/    
+-->
+<!--
+    <script>
+        async("http://cdn.bootcss.com/highlight.js/8.6/highlight.min.js", function(){
+            hljs.initHighlightingOnLoad();
+        })
+    </script>
+    <link href="http://cdn.bootcss.com/highlight.js/8.6/styles/github.min.css" rel="stylesheet">
+-->
+
+
+<!-- jquery.tagcloud.js -->
+<script>
+    // only load tagcloud.js in tag.html
+    if($('#tag_cloud').length !== 0){
+        async("https://blog.soaringhawkcheng.tech/js/jquery.tagcloud.js",function(){
+            $.fn.tagcloud.defaults = {
+                //size: {start: 1, end: 1, unit: 'em'},
+                color: {start: '#bbbbee', end: '#0085a1'},
+            };
+            $('#tag_cloud a').tagcloud();
+        })
+    }
+</script>
+
+<!--fastClick.js -->
+<script>
+    async("https://cdn.bootcss.com/fastclick/1.0.6/fastclick.min.js", function(){
+        var $nav = document.querySelector("nav");
+        if($nav) FastClick.attach($nav);
+    })
+</script>
+
+
+<!-- Google Analytics -->
+
+
+
+
+<!-- Baidu Tongji -->
+
+
+
+
+
+
+	<a id="rocket" href="#top" class=""></a>
+	<script type="text/javascript" src="/js/totop.js?v=1.0.0" async=""></script>
+    <script type="text/javascript" src="/js/toc.js?v=1.0.0" async=""></script>
+<!-- Image to hack wechat -->
+<img src="https://blog.soaringhawkcheng.tech/img/icon_wechat.png" width="0" height="0" />
+<!-- Migrate from head to bottom, no longer block render and still work -->
+
+</body>
+
+</html>
